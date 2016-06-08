@@ -1,0 +1,3 @@
+<div *ngFor="let reg of getRegisterKeys()">
+    <div>{{ reg }}: {{ cpu.getRegisterByName(reg).getValue() }}</div>
+</div>

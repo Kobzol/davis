@@ -1,0 +1,109 @@
+Start =
+	ProgramReverse
+
+ProgramReverse =
+	program:Program _  { return program.reverse(); }
+
+Program =
+     line:Line"\n"program:Program { program.push(line); return program; } / line:Line { return [line]; } / "" { return [{ tag: "Whitespace" }]; }
+
+Line =
+	_ label:Label? _ inst:Instruction? { return { tag: "Line", label: label, instruction: inst }; }
+
+Label =
+	local:"."? name:Identifier ":" { return { tag: "Label", name: name, local: local !== null }; }
+
+Instruction =
+	NoOperandInstruction / JumpInstruction / SingleOperandInstruction /
+    MemoryInstruction / ArithmeticInstruction
+
+NoOperandInstruction =
+	("CLD" / "STD" / "CLC" / "STC" / "ENTER" / "RET" / "LEAVE") { return { tag: "Instruction", type: "NoOperand", name: text() }; }
+
+JumpInstruction =
+	name:$(
+    	"JMP" / "JE" / "JNE" / "JZ" / "JNZ" / "JB" / "JNAE" / "JC" /
+    	"JNB" / "JAE" / "JNC" / "JBE" / "JNA" / "JA" / "JNBE" / "JL" /
+        "JNGE" / "JGE" / "JNL" / "JLE" / "JNG" / "JG" / "JNLE" / "JCXZ" /
+        "JECXZ" / "JP" / "JPE" / "JNP" / "JPO" / "JO" / "JNO" / "JS" /
+        "JNS" / "CALL"
+    ) _ target:ReadableExpression
+    { return { tag: "Instruction", type: "Jump", name: name, operands: [target] }; }
+
+SingleOperandInstruction =
+	name:$(
+    	"POP" / "INC" / "DEC"
+    ) _ target:WritableExpression { return { tag: "Instruction", type: "SingleOperand", name: name, operands: [target] }; } /
+    name:$(
+    	"PUSH" / "INT"
+    ) _ target:ReadableExpression { return { tag: "Instruction", type: "SingleOperand", name: name, operands: [target] }; }
+
+MemoryInstruction =
+	name:$("MOV" / "MOVSX") _ target:WritableExpression _ "," _ source:ReadableExpression
+    { return { tag: "Instruction", type: "Memory", name: name, operands: [target, source] }; }
+
+ArithmeticInstruction =
+	name:$("ADD" / "SUB" / "ADC" / "SBB" / "DIV" / "IDIV" / "MUL" / "IMUL") _ target:WritableExpression _ source:ReadableExpression
+    { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [target, source] }; }
+
+WritableExpression =
+	Register /
+    cast:SizeCast _ value:RegisterDereferenceExpression { return { tag: "Cast", size: cast, value: value }; } /
+    cast:SizeCast _ value:AddressDereferenceExpression { return { tag: "Cast", size: cast, value: value }; }
+
+ReadableExpression =
+	Register /
+    cast:SizeCast _ value:RegisterDereferenceExpression { return { tag: "Cast", size: cast, value: value }; } /
+    cast:SizeCast _ value:AddressDereferenceExpression { return { tag: "Cast", size: cast, value: value }; } /
+    cast:SizeCast _ value:LabelExpression { return { tag: "Cast", size: cast, value: value }; } /
+    cast:SizeCast _ value:Number { return { tag: "Cast", size: cast, value: value }; }
+
+AddressDereferenceExpression =
+	"[" _ label:LabelExpression _ "]" { return { tag: "Label", value: label.value, deref: true }; } /
+    "[" _ number:Number _ "]" { return { tag: "Number", value: number.value, deref: true }; }
+
+LabelExpression =
+	local:(".")? target:Identifier { return { tag: "Label", value: local !== null ? ("." + target.value) : target.value }; }
+
+RegisterDereferenceExpression =
+	(("[" _ baseReg:Register _ indexer:IndexExpression? _ "]")
+    {
+    	return {
+    		tag: "Mem",
+        	baseRegister: baseReg,
+        	indexRegister: indexer !== null ? indexer.indexRegister : null,
+        	multiplier: indexer !== null && indexer.offset !== null ? indexer.offset.multiplier : null,
+        	constant: indexer !== null && indexer.offset !== null ? indexer.offset.constant : null
+    	};
+    })
+
+IndexExpression =
+	(
+    	"+" _ indexReg:Register _
+    	offset:("*" _ multiplier:Number _
+        				constant: ("+" _ constant:Number { return constant; } )?
+                        { return { multiplier: multiplier, constant: constant }; })?
+    ) { return { indexRegister: indexReg.name, offset: offset }; }
+
+Register =
+	(
+    	"EAX" / "AX" / "AH" / "AL" / "EBX" / "BX" / "BH" / "BL" /
+    	"ECX" / "CX" / "CH" / "CL" / "EDX" / "DX" / "DH" / "DL" /
+    	"EBP" / "ESP" / "EDI" / "ESI"
+    ) { return { tag: "Reg", name: text() }; }
+
+SizeCast =
+	"BYTE" { return 1; } /
+    "WORD" { return 2; } /
+    "DWORD" { return 4; } /
+    "" { return 0; }
+
+Identifier =
+	[a-zA-Z_][a-zA-Z_0-9]* { return { tag: "Identifier", value: text() }; }
+
+Number =
+	"0x"[0-9a-fA-F]+ { return { tag: "Number", value: parseInt(text(), 16) }; } /
+	[0-9]+ { return { tag: "Number", value: parseInt(text(), 10) }; }
+
+_ "whitespace"
+  = [ \t\r]*
