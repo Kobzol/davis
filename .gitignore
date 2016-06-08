@@ -15,6 +15,7 @@ _temp
 !systemjs.config.js
 !typings/typings.d.ts
 !wallaby.js
+!/*.js
 
 bower_components
 build
