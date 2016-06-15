@@ -1,0 +1,4 @@
+<button [disabled]="process === null || process.isStarted()" (click)="onStart()">Start</button>
+<button [disabled]="process === null || !process.isRunning()" (click)="onPause()">Pause</button>
+<button [disabled]="process === null || !process.isPaused()" (click)="onContinue()">Continue</button>
+<button [disabled]="process === null || !process.isPaused()" (click)="onStep()">Step</button>

@@ -2,18 +2,26 @@ import {MemoryView} from "./memory-view";
 
 export class MemoryBlock
 {
-    private data: ArrayBuffer;
+    private _data: ArrayBuffer;
 
     constructor(size: number)
     {
-        this.data = new ArrayBuffer(size);
+        this._data = new ArrayBuffer(size);
     }
 
-    load(address: number, size: number = 4, signed: boolean = false): MemoryView
+    public load(address: number, size: number = 4, signed: boolean = false): MemoryView
     {
         return new MemoryView(this, size, address, signed);
     }
 
-    getData(): ArrayBuffer { return this.data; }
-    getSize(): number { return this.getData().byteLength; }
+    public clear()
+    {
+        for (let i = 0; i < this.size; i++)
+        {
+            this.load(i, 1).setValue(0);
+        }
+    }
+
+    get data(): ArrayBuffer { return this._data; }
+    get size(): number { return this.data.byteLength; }
 }

@@ -1,0 +1,4 @@
+<asm-editor (compile)="compileSource($event)" [activeLine]="getActiveLine()"></asm-editor><br />
+<execution-controls [process]="runtime.process"></execution-controls>
+{{ compileErrors }}
+{{ runtime.hasProcess() }}

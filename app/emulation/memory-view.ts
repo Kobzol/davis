@@ -28,7 +28,7 @@ export class MemoryView
         this.index = index;
         this.signed = signed;
 
-        this.view = new DataView(this.memory.getData(), index);
+        this.view = new DataView(this.memory.data, index);
         let signedIndex: number = signed ? 1 : 0;
         this.getMethod = GET_METHODS[byteSize.toString()][signedIndex];
         this.setMethod = SET_METHODS[byteSize.toString()][signedIndex];

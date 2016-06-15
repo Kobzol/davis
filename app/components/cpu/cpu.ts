@@ -2,12 +2,12 @@ import {Component, Input} from "@angular/core";
 import {CPU} from "../../emulation/cpu";
 
 @Component({
-    selector: "cpu-view",
-    templateUrl: "app/gui/cpu/cpu.html"
+    selector: "cpu",
+    templateUrl: "app/components/cpu/cpu.html"
 })
-export class CpuView
+export class CpuComponent
 {
-    @Input() public cpu: CPU;
+    @Input() cpu: CPU;
 
     getRegisterKeys(): any[]
     {

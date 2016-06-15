@@ -87,7 +87,9 @@ class LabelResolver
 
 export class AssemblyException
 {
-    constructor(public message: string = "", public line: number = 0, public data: any = {})
+    constructor(public message: string = "",
+                public line: number = 0,
+                public data: any = {})
     {
 
     }
@@ -106,7 +108,17 @@ export class Assembler
 
     assemble(program: string) : Program
     {
-        let lines: any = parser.parse(program);
+        let lines: any[] = [];
+
+        try
+        {
+            lines = parser.parse(program);
+        }
+        catch (e)
+        {
+            throw new AssemblyException(e.message, e.location.start.line);
+        }
+
         let lineMap: LineMap = new LineMap();
         let instructions: EncodedInstruction[] = [];
 
@@ -128,7 +140,7 @@ export class Assembler
             {
                 if (e instanceof AssemblyException)
                 {
-                    throw new AssemblyException(e.message, i, lines[i]);
+                    throw new AssemblyException(e.message, i + 1, lines[i]);
                 }
                 else throw e;
             }

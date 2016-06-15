@@ -3,13 +3,7 @@ import {MemoryBlock} from "./memory-block";
 import {MemoryView} from "./memory-view";
 import {Instruction} from "./instruction/instruction";
 import {EventBroadcaster} from "../util/event-broadcaster";
-import {Interrupt} from "./instruction/interrupt";
-import {Parameter} from "./instruction/parameter";
-import {Pop} from "./instruction/pop";
 import {ALU} from "./alu";
-import {SetCarry, ClearCarry, SetDirection, ClearDirection} from "./instruction/flags";
-import {Enter, Leave, CallAddress, Return} from "./instruction/retcall";
-import {Jump, ConditionalJump} from "./instruction/jump";
 import {Program} from "../assembly/program";
 import {Dictionary} from "../util/interfaces";
 
@@ -117,19 +111,21 @@ export const REGISTER_INDEX: any = {
 
 export class CPU
 {
+    public static INTERRUPT_EXIT: number = 0;
+    
     private status: StatusWord = new StatusWord();
     private registers: MemoryBlock[];
     private _registerMap: Dictionary<MemoryView> = {};
     private _alu: ALU;
-    private _memory: MemoryBlock;
-    private _program: Program;
     private _onInterrupt: EventBroadcaster = new EventBroadcaster();
+    private _running: boolean = false;
+    private scheduleTimeout: any = null;
 
-    constructor(program: Program, memory: MemoryBlock)
+    constructor(private _program: Program,
+                private _memory: MemoryBlock,
+                private _tick: number = 500)
     {
         this.registers = _.map(_.range(10), () => new MemoryBlock(4));
-        this._program = program;
-        this._memory = memory;
         this._alu = new ALU(this);
 
         _.keys(REGISTER_INDEX).forEach((key) =>
@@ -140,18 +136,53 @@ export class CPU
         this.reset();
     }
 
+    get eip(): number { return this.registerMap["EIP"].getValue(); }
+    get statusWord(): StatusWord { return this.status; }
+    get memory(): MemoryBlock { return this._memory; }
+    get program(): Program { return this._program; }
+    get onInterrupt(): EventBroadcaster { return this._onInterrupt; }
+    get alu(): ALU { return this._alu; }
+    get registerMap(): Dictionary<MemoryView> { return this._registerMap; }
+    get running(): boolean { return this._running; }
+    get activeLine(): number
+    {
+        return this.program.lineMap.getLineByAddress(this.eip);
+    }
+
     reset()
     {
         this.getRegisterByName("EIP").setValue(0);
-        this.getRegisterByName("ESP").setValue(this.memory.getSize() - 1);
-        this.getRegisterByName("EBP").setValue(this.memory.getSize() - 1);
+        this.getRegisterByName("ESP").setValue(this.memory.size - 1);
+        this.getRegisterByName("EBP").setValue(this.memory.size - 1);
     }
     step()
     {
+        if (this.isFinished())
+        {
+            this.pause();
+            this.onInterrupt.notify(CPU.INTERRUPT_EXIT);
+            return;
+        }
+
         let eip: number = this.eip;
         let instruction: Instruction = this.loadInstruction(eip);
         let nextAddress: number = instruction.execute(this);
         this.getRegisterByName("EIP").setValue(nextAddress);
+    }
+    run()
+    {
+        this._running = true;
+        this.scheduleRun();
+        this.step();
+    }
+    pause()
+    {
+        this._running = false;
+        this.clearScheduledRun();
+    }
+    isFinished(): boolean
+    {
+        return this.eip >= this.program.instructions.length;
     }
 
     push(value: number)
@@ -193,16 +224,29 @@ export class CPU
         return this.getRegisterByName(_.findKey(REGISTER_INDEX, (reg: RegisterInfo) => reg.id == index));
     }
 
-    get eip(): number { return this.registerMap["EIP"].getValue(); }
-    get statusWord(): StatusWord { return this.status; }
-    get memory(): MemoryBlock { return this._memory; }
-    get program(): Program { return this._program; }
-    get onInterrupt(): EventBroadcaster { return this._onInterrupt; }
-    get alu(): ALU { return this._alu; }
-    get registerMap(): Dictionary<MemoryView> { return this._registerMap; }
-
     private loadInstruction(eip: number): Instruction
     {
         return this.program.getInstructionByAddress(this, eip);
+    }
+
+    private scheduleRun()
+    {
+        this.clearScheduledRun();
+        this.scheduleTimeout = setTimeout(() => this.tickStep(), this._tick);
+    }
+    private clearScheduledRun()
+    {
+        if (this.scheduleTimeout !== null)
+        {
+            clearTimeout(this.scheduleTimeout);
+        }
+    }
+    private tickStep()
+    {
+        if (this.running)
+        {
+            this.step();
+            this.scheduleRun();
+        }
     }
 }
