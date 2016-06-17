@@ -1,1 +1,9 @@
-{{ memory.size }}
+<div class="memory" *ngIf="memory !== null">
+  <div class="row" *ngFor="let row of createRange(getRowCount())">
+    <div class="col" *ngFor="let col of createRange(width)">
+      <div *ngIf="memory.isValid(createAddress(row, col))">
+        {{ memory.load(createAddress(row, col), 1).getValue() }}
+      </div>
+    </div>
+  </div>
+</div>

@@ -112,13 +112,16 @@ export const REGISTER_INDEX: any = {
 export class CPU
 {
     public static INTERRUPT_EXIT: number = 0;
-    
+
     private status: StatusWord = new StatusWord();
     private registers: MemoryBlock[];
     private _registerMap: Dictionary<MemoryView> = {};
     private _alu: ALU;
-    private _onInterrupt: EventBroadcaster = new EventBroadcaster();
+    private _onInterrupt: EventBroadcaster<number> = new EventBroadcaster<number>();
+    private _onExit: EventBroadcaster<CPU> = new EventBroadcaster<CPU>();
     private _running: boolean = false;
+    private _breakpoints: number[];
+    private stoppedOnBreakpoint: boolean = false;
     private scheduleTimeout: any = null;
 
     constructor(private _program: Program,
@@ -136,17 +139,52 @@ export class CPU
         this.reset();
     }
 
-    get eip(): number { return this.registerMap["EIP"].getValue(); }
-    get statusWord(): StatusWord { return this.status; }
-    get memory(): MemoryBlock { return this._memory; }
-    get program(): Program { return this._program; }
-    get onInterrupt(): EventBroadcaster { return this._onInterrupt; }
-    get alu(): ALU { return this._alu; }
-    get registerMap(): Dictionary<MemoryView> { return this._registerMap; }
-    get running(): boolean { return this._running; }
+    get eip(): number
+    {
+        return this.registerMap["EIP"].getValue();
+    }
+    get statusWord(): StatusWord
+    {
+        return this.status;
+    }
+    get memory(): MemoryBlock
+    {
+        return this._memory;
+    }
+    get program(): Program
+    {
+        return this._program;
+    }
+    get onInterrupt(): EventBroadcaster<number>
+    {
+        return this._onInterrupt;
+    }
+    get onExit(): EventBroadcaster<CPU>
+    {
+        return this._onExit;
+    }
+    get alu(): ALU
+    {
+        return this._alu;
+    }
+    get registerMap(): Dictionary<MemoryView>
+    {
+        return this._registerMap;
+    }
+    get running(): boolean
+    {
+        return this._running;
+    }
     get activeLine(): number
     {
         return this.program.lineMap.getLineByAddress(this.eip);
+    }
+    set breakpoints(value: number[])
+    {
+        this._breakpoints = _.filter(
+            _.map(value, (row: number) => this.program.lineMap.getAddressByLine(row),
+            (value: number) => value !== null)
+        );
     }
 
     reset()
@@ -160,20 +198,27 @@ export class CPU
         if (this.isFinished())
         {
             this.pause();
-            this.onInterrupt.notify(CPU.INTERRUPT_EXIT);
+            this.onExit.notify(this);
             return;
         }
 
-        let eip: number = this.eip;
-        let instruction: Instruction = this.loadInstruction(eip);
-        let nextAddress: number = instruction.execute(this);
-        this.getRegisterByName("EIP").setValue(nextAddress);
+        if (this.hasBreakpoint())
+        {
+            if (!this.stoppedOnBreakpoint)
+            {
+                this.stoppedOnBreakpoint = true;
+                this.pause();
+                return;
+            }
+            else this.stoppedOnBreakpoint = false;
+        }
+
+        this.executeOneInstruction();
     }
     run()
     {
         this._running = true;
         this.scheduleRun();
-        this.step();
     }
     pause()
     {
@@ -224,6 +269,17 @@ export class CPU
         return this.getRegisterByName(_.findKey(REGISTER_INDEX, (reg: RegisterInfo) => reg.id == index));
     }
 
+    private hasBreakpoint(): boolean
+    {
+        return _.includes(this._breakpoints, this.eip);
+    }
+    private executeOneInstruction()
+    {
+        let eip: number = this.eip;
+        let instruction: Instruction = this.loadInstruction(eip);
+        let nextAddress: number = instruction.execute(this);
+        this.getRegisterByName("EIP").setValue(nextAddress);
+    }
     private loadInstruction(eip: number): Instruction
     {
         return this.program.getInstructionByAddress(this, eip);

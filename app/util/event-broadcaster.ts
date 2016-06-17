@@ -1,10 +1,10 @@
-export class EventBroadcaster
+export class EventBroadcaster<T>
 {
     private listeners: any[] = [];
 
-    notify(...args: any[])
+    notify(value: T)
     {
-        this.listeners.forEach((listener) => listener.apply(undefined, args));
+        this.listeners.forEach((listener) => listener.apply(undefined, value));
     }
     subscribe(listener: any)
     {

@@ -103,12 +103,12 @@ const InstructionMapping = {
 
 export class Assembler
 {
-    private address: number = 0;
     private labelResolver: LabelResolver = new LabelResolver();
 
     assemble(program: string) : Program
     {
         let lines: any[] = [];
+        let address: number = 0;
 
         try
         {
@@ -124,15 +124,16 @@ export class Assembler
 
         for (let i = 0; i < lines.length; i++)
         {
-            lineMap.mapLine(this.address, i);
+            lineMap.mapLine(address, i);
             try
             {
                 if (lines[i].tag == "Line")
                 {
-                    let instruction: EncodedInstruction = this.assembleInstruction(lines[i]);
+                    let instruction: EncodedInstruction = this.assembleInstruction(lines[i], address);
                     if (instruction !== null)
                     {
                         instructions.push(instruction);
+                        address++;
                     }
                 }
             }
@@ -151,11 +152,11 @@ export class Assembler
         return new Program(instructions, lineMap);
     }
 
-    private assembleInstruction(line: {tag: string, label: any, instruction: any}): EncodedInstruction
+    private assembleInstruction(line: {tag: string, label: any, instruction: any}, address: number): EncodedInstruction
     {
         if (line.label !== null)
         {
-            this.assembleLabel(line.label);
+            this.assembleLabel(line.label, address);
         }
 
         if (line.instruction !== null)
@@ -254,8 +255,8 @@ export class Assembler
         else return 4;
     }
 
-    private assembleLabel(label: {tag: string, name: any, local: boolean})
+    private assembleLabel(label: {tag: string, name: any, local: boolean}, address: number)
     {
-       this.labelResolver.addLabel(this.address, label.name.value, label.local);
+       this.labelResolver.addLabel(address, label.name.value, label.local);
     }
 }

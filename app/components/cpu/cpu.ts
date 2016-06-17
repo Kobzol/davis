@@ -7,7 +7,7 @@ import {CPU} from "../../emulation/cpu";
 })
 export class CpuComponent
 {
-    @Input() cpu: CPU;
+    @Input() cpu: CPU = null;
 
     getRegisterKeys(): any[]
     {

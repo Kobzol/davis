@@ -11,9 +11,13 @@ export class LineMap
     {
         this.mapping[address] = line;
     }
-    public getLineByAddress(address: number)
+    public getLineByAddress(address: number): number
     {
         return _.findLast(this.mapping, (line: number, key: number) => key <= address);
+    }
+    public getAddressByLine(row: number) : number
+    {
+        return Number(_.findKey(this.mapping, (line: number) => line == row));
     }
 }
 

@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, ViewChild} from '@angular/core';
 import {MemoryBlock} from "./../../emulation/memory-block";
 import {CPU} from "./../../emulation/cpu";
 import {Assembler} from "./../../assembly/assembler";
@@ -17,9 +17,12 @@ import {ExecutionComponent} from "../execution/execution";
 })
 export class App
 {
+    @ViewChild(AsmEditor) asmEditor: AsmEditor;
+
     private runtime: Runtime = new Runtime();
     private assembler: Assembler = new Assembler();
 
+    private memorySize: number = 256;
     private compileErrors: string = "";
 
     private compileSource(source: string)
@@ -27,8 +30,9 @@ export class App
         try
         {
             let program: Program = this.assembler.assemble(source);
-            let memory: MemoryBlock = new MemoryBlock(30);
+            let memory: MemoryBlock = new MemoryBlock(this.memorySize);
             let cpu: CPU = new CPU(program, memory);
+            cpu.breakpoints = this.asmEditor.breakpoints;
             this.runtime.process = new Process(cpu);
 
             this.compileErrors = "";
@@ -36,6 +40,14 @@ export class App
         catch (e)
         {
             this.compileErrors = `Error at line ${e.line}: ${e.message}`;
+        }
+    }
+
+    private onBreakpointChanged(breakpoints: number[])
+    {
+        if (this.runtime.hasProcess())
+        {
+            this.runtime.process.cpu.breakpoints = breakpoints;
         }
     }
 

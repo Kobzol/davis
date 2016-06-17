@@ -14,9 +14,14 @@ export class AsmEditor
     @ViewChild("editor") editor: ElementRef;
     private aceEditor: any = null;
 
-    private breakpoints: number[] = [];
+    private _breakpoints: number[] = [];
     private _activeLine: number = null;
     static ACTIVE_LINE_CLASS: string = "active-line";
+
+    get breakpoints(): number[]
+    {
+        return this._breakpoints;
+    }
 
     @Input() set activeLine(value: number)
     {
@@ -54,19 +59,19 @@ export class AsmEditor
         if (this.hasBreakpoint(row))
         {
             this.aceEditor.session.clearBreakpoint(row);
-            _.remove(this.breakpoints, (value: number) => value == row);
+            _.remove(this._breakpoints, (value: number) => value == row);
         }
         else
         {
             this.aceEditor.session.setBreakpoint(row);
-            this.breakpoints.push(row);
+            this._breakpoints.push(row);
         }
 
-        this.breakpointChange.emit(this.breakpoints);
+        this.breakpointChange.emit(this._breakpoints);
     }
     private hasBreakpoint(row: number): boolean
     {
-        return _.includes(this.breakpoints, row);
+        return _.includes(this._breakpoints, row);
     }
 
     private removeActiveLine()

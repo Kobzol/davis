@@ -13,6 +13,10 @@ export class MemoryBlock
     {
         return new MemoryView(this, size, address, signed);
     }
+    public isValid(address: number): boolean
+    {
+        return address >= 0 && address < this.size;
+    }
 
     public clear()
     {

@@ -6,13 +6,7 @@ export class Process
 
     constructor(private _cpu: CPU)
     {
-        this.cpu.onInterrupt.subscribe((id: number) =>
-        {
-           if (id === CPU.INTERRUPT_EXIT)
-           {
-               this.started = false;
-           }
-        });
+        this.cpu.onExit.subscribe((cpu: CPU) => this.started = false);
     }
 
     get cpu(): CPU
