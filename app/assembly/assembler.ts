@@ -101,62 +101,170 @@ const InstructionMapping = {
     "INT": Interrupt
 };
 
+enum MemoryType
+{
+    Data = 0,
+    Text = 1
+}
+
+class AssemblyData
+{
+    constructor(public textAddress: number = 0,
+                public dataAddress: number = 0,
+                public lineMap: LineMap = new LineMap(),
+                public labelResolver: LabelResolver = new LabelResolver())
+    {
+
+    }
+
+    public getAddress(memoryType: MemoryType): number
+    {
+        return memoryType === MemoryType.Data ? this.dataAddress : this.textAddress;
+    }
+}
+
+export class MemoryDefinition
+{
+    constructor(private _address: number,
+                private _size: number,
+                private _value: any)
+    {
+
+    }
+
+    get address(): number
+    {
+        return this._address;
+    }
+    get size(): number
+    {
+        return this._size;
+    }
+    get value(): any
+    {
+        return this._value;
+    }
+}
+
+// TODO: comment on empty lines
 export class Assembler
 {
-    private labelResolver: LabelResolver = new LabelResolver();
-
     assemble(program: string) : Program
     {
-        let lines: any[] = [];
-        let address: number = 0;
+        let parsedProgram: {text: any[], data: any[]};
 
         try
         {
-            lines = parser.parse(program);
+            parsedProgram = parser.parse(program);
         }
         catch (e)
         {
             throw new AssemblyException(e.message, e.location.start.line);
         }
 
-        let lineMap: LineMap = new LineMap();
-        let instructions: EncodedInstruction[] = [];
+        let assemblyData: AssemblyData = new AssemblyData();
+        let memoryDefinitions: MemoryDefinition[] = this.assembleDataSegment(parsedProgram.data, assemblyData);
+        let instructions: EncodedInstruction[] = this.assembleTextSegment(parsedProgram.text, assemblyData);
 
-        for (let i = 0; i < lines.length; i++)
+        assemblyData.labelResolver.resolveAddresses();
+
+        return new Program(instructions, memoryDefinitions, assemblyData.lineMap);
+    }
+
+    private assembleDataSegment(dataLines: any[], assemblyData: AssemblyData): MemoryDefinition[]
+    {
+        let memoryDefinitions: MemoryDefinition[] = [];
+
+        for (let i = 0; i < dataLines.length; i++)
         {
-            lineMap.mapLine(address, i);
+            let line: number = dataLines[i].location.start.line - 1;
             try
             {
-                if (lines[i].tag == "Line")
+                memoryDefinitions = memoryDefinitions.concat(this.assembleMemoryDefinitions(dataLines[i].line, assemblyData));
+            }
+            catch (e)
+            {
+                if (e instanceof AssemblyException)
                 {
-                    let instruction: EncodedInstruction = this.assembleInstruction(lines[i], address);
-                    if (instruction !== null)
+                    throw new AssemblyException(e.message, line + 1, dataLines[i].line);
+                }
+                else throw e;
+            }
+        }
+
+        return memoryDefinitions;
+    }
+    private assembleMemoryDefinitions(line: any, assemblyData: AssemblyData): MemoryDefinition[]
+    {
+        if (line.label !== null)
+        {
+            this.assembleLabel(line.label, assemblyData, MemoryType.Data);
+        }
+
+
+        let definitions: MemoryDefinition[] = [];
+        let size: number = line.size;
+        if (size !== null)
+        {
+            for (let i = 0; i < line.constants.length; i++)
+            {
+                let constant = line.constants[i];
+
+                if (constant.tag === "String")
+                {
+                    let characters: string[] = <string[]>(constant.value);
+                    for (let j = 0; j < characters.length; j++)
                     {
-                        instructions.push(instruction);
-                        address++;
+                        definitions.push(new MemoryDefinition(assemblyData.dataAddress, size, characters[j].charCodeAt(0)));
+                        assemblyData.dataAddress += size;
                     }
+                }
+                else if (constant.tag === "Number")
+                {
+                    definitions.push(new MemoryDefinition(assemblyData.dataAddress, size, constant.value));
+                    assemblyData.dataAddress += size;
+                }
+            }
+        }
+
+        return definitions;
+    }
+
+    private assembleTextSegment(textLines: any[], assemblyData: AssemblyData): EncodedInstruction[]
+    {
+        let instructions: EncodedInstruction[] = [];
+
+        for (let i = 0; i < textLines.length; i++)
+        {
+            let line: number = textLines[i].location.start.line - 1;
+            try
+            {
+                let instruction: EncodedInstruction = this.assembleInstruction(textLines[i].line, assemblyData);
+                if (instruction !== null)
+                {
+                    instructions.push(instruction);
+                    assemblyData.lineMap.mapLine(assemblyData.textAddress, line);
+                    assemblyData.textAddress++;
                 }
             }
             catch (e)
             {
                 if (e instanceof AssemblyException)
                 {
-                    throw new AssemblyException(e.message, i + 1, lines[i]);
+                    throw new AssemblyException(e.message, line + 1, textLines[i].line);
                 }
                 else throw e;
             }
         }
 
-        this.labelResolver.resolveAddresses();
-
-        return new Program(instructions, lineMap);
+        return instructions;
     }
 
-    private assembleInstruction(line: {tag: string, label: any, instruction: any}, address: number): EncodedInstruction
+    private assembleInstruction(line: {tag: string, label: any, instruction: any}, assemblyData: AssemblyData): EncodedInstruction
     {
         if (line.label !== null)
         {
-            this.assembleLabel(line.label, address);
+            this.assembleLabel(line.label, assemblyData, MemoryType.Text);
         }
 
         if (line.instruction !== null)
@@ -214,10 +322,10 @@ export class Assembler
 
         return new MemoryParameter(size, baseRegId, indexRegId, multiplier, constant);
     }
-    private parseLabelParameter(size: number, operand: any): Parameter
+    private parseLabelParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
     {
         let labelParameter: LabelParameter = new LabelParameter(size, operand.value, _.has(operand, "deref"));
-        this.labelResolver.markUnresolvedParameter(labelParameter);
+        assemblyData.labelResolver.markUnresolvedParameter(labelParameter);
 
         return labelParameter;
     }
@@ -255,8 +363,8 @@ export class Assembler
         else return 4;
     }
 
-    private assembleLabel(label: {tag: string, name: any, local: boolean}, address: number)
+    private assembleLabel(label: {tag: string, name: any, local: boolean}, assemblyData: AssemblyData, memoryType: MemoryType)
     {
-       this.labelResolver.addLabel(address, label.name.value, label.local);
+        assemblyData.labelResolver.addLabel(assemblyData.getAddress(memoryType), label.name.value, label.local);
     }
 }

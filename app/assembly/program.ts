@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import {Instruction} from "../emulation/instruction/instruction";
 import {CPU} from "../emulation/cpu";
 import {EncodedInstruction} from "./encoding";
+import {MemoryDefinition} from "./assembler";
 
 export class LineMap
 {
@@ -23,18 +24,28 @@ export class LineMap
 
 export class Program
 {
-    private _lineMap: LineMap;
-    public instructions: EncodedInstruction[];
-
-    constructor(instructions: EncodedInstruction[], lineMap: LineMap)
+    constructor(private _instructions: EncodedInstruction[],
+                private _memoryDefinitions: MemoryDefinition[],
+                private _lineMap: LineMap)
     {
-        this.instructions = instructions;
-        this._lineMap = lineMap;
+
+    }
+
+    get instructions(): EncodedInstruction[]
+    {
+        return this._instructions;
+    }
+    get memoryDefinitions(): MemoryDefinition[]
+    {
+        return this._memoryDefinitions;
+    }
+    public get lineMap(): LineMap
+    {
+        return this._lineMap;
     }
 
     public getInstructionByAddress(cpu: CPU, address: number): Instruction
     {
         return this.instructions[address].instantiate(cpu);
     }
-    public get lineMap(): LineMap { return this._lineMap; }
 }

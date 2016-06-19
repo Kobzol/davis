@@ -1,4 +1,6 @@
 import {CPU} from "./cpu";
+import {MemoryDefinition} from "../assembly/assembler";
+import {MemoryBlock} from "./memory-block";
 
 export class Process
 {
@@ -18,6 +20,7 @@ export class Process
     {
         this.started = true;
         this.reset();
+        this.initMemory();
         this.cpu.run();
     }
 
@@ -38,5 +41,16 @@ export class Process
     {
         this.cpu.reset();
         this.cpu.memory.clear();
+    }
+
+    private initMemory()
+    {
+        let memoryDefinitions: MemoryDefinition[] = this.cpu.program.memoryDefinitions;
+        let memory: MemoryBlock = this.cpu.memory;
+
+        for (const memoryDef of memoryDefinitions)
+        {
+            memory.load(memoryDef.address, memoryDef.size).setValue(memoryDef.value);
+        }
     }
 }

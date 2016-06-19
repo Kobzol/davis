@@ -1,4 +1,3 @@
-import {CPU} from "../app/emulation/cpu";
 import {Assembler} from "../app/assembly/assembler";
 
 describe('Assembler', () =>

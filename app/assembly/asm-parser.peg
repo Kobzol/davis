@@ -1,14 +1,44 @@
 Start =
-	ProgramReverse
+	__
+    data:
+    (
+    	"section"i _ ".data"i  Comment? __
+    	data:(data:DataLine { return { line: data, location: location() }; })*
+    	{ return data; }
+    )?
+    __
+    text:
+    (
+    	"section"i _ ".text"i Comment? __
+        text:(text:TextLine { return { line: text, location: location() }; })*
+        { return text; }
+    )?
+    { return { data: data, text: text }; }
 
-ProgramReverse =
-	program:Program _  { return program.reverse(); }
+EmptyLine =
+	Comment / _
 
-Program =
-     line:Line"\n"program:Program { program.push(line); return program; } / line:Line { return [line]; } / "" { return [{ tag: "Whitespace" }]; }
+Comment =
+	_ ";" [^\n]*
 
-Line =
-	_ label:Label? _ inst:Instruction? { return { tag: "Line", label: label, instruction: inst }; }
+DataLine =
+	(label:Label? _ size:DataSize _ constant:DataConstant constants:(_ "," _ constant:DataConstant { return constant; })* Comment? __
+    {
+    	return { label: label, size: size, constants: [constant].concat(constants) };
+    }) /
+    (label:Label Comment? __ { return { label: label, size: null, constants: [] }; })
+
+DataConstant =
+	Number / String
+
+DataSize =
+	"db" { return 1; } /
+    "dw" { return 2; } /
+    "dd" { return 4; }
+
+TextLine =
+	(_ label:Label? _ inst:Instruction Comment? __ { return { tag: "Line", label: label, instruction: inst }; }) /
+    (_ label:Label Comment? __ { return { tag: "Line", label: label, instruction: null }; })
 
 Label =
 	local:"."? name:Identifier ":" { return { tag: "Label", name: name, local: local !== null }; }
@@ -105,5 +135,11 @@ Number =
 	"0x"[0-9a-fA-F]+ { return { tag: "Number", value: parseInt(text(), 16) }; } /
 	[0-9]+ { return { tag: "Number", value: parseInt(text(), 10) }; }
 
+String =
+	"'" value:("\\'" { return "'"; } / [^'])* "'" { return { tag: "String", value: value }; }
+
 _ "whitespace"
   = [ \t\r]*
+
+__ "whitespace_plus_lines"
+  = [ \t\r\n]*
