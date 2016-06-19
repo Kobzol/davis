@@ -2,8 +2,6 @@ import {Instruction} from "./instruction";
 import {CPU} from "../cpu";
 import {MemoryView} from "../memory-view";
 import {Parameter} from "./parameter";
-import {RegisterParameter} from "./parameter";
-import {MemoryParameter} from "./parameter";
 
 export class Move extends Instruction
 {
@@ -29,7 +27,8 @@ export class Move extends Instruction
             [Parameter.Reg, Parameter.Constant],
             [Parameter.Reg, Parameter.Memory],
             [Parameter.Memory, Parameter.Reg],
-            [Parameter.Memory, Parameter.Constant]
+            [Parameter.Memory, Parameter.Constant],
+            [Parameter.Reg, Parameter.Label]
         ];
     }
 }

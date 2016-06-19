@@ -19,18 +19,20 @@ export abstract class Parameter
 
 export class ConstantParameter extends Parameter
 {
-    constructor(size: number, private number: number, private deref: boolean)
+    constructor(size: number, private value: number, private deref: boolean)
     {
         super(size);
     }
 
     fetchData(cpu: CPU): MemoryView
     {
+        let value: MemoryView = new NumericConstant(this.value);
+
         if (this.deref)
         {
-            return cpu.memory.load(this.number, this.size);
+            return cpu.deref(value, this.size);
         }
-        else return new NumericConstant(this.number);
+        else return value;
     }
 }
 
@@ -91,10 +93,12 @@ export class LabelParameter extends Parameter
 
     fetchData(cpu: CPU): MemoryView
     {
+        let value: MemoryView = new NumericConstant(this.address);
+
         if (this.deref)
         {
-            return cpu.memory.load(this.address, this.size);
+            return cpu.deref(value, this.size);
         }
-        else return new NumericConstant(this.address);
+        else return value;
     }
 }

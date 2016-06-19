@@ -1,11 +1,12 @@
 import * as _ from "lodash";
 import {MemoryBlock} from "./memory-block";
-import {MemoryView} from "./memory-view";
+import {MemoryView, NumericConstant} from "./memory-view";
 import {Instruction} from "./instruction/instruction";
-import {EventBroadcaster} from "../util/event-broadcaster";
 import {ALU} from "./alu";
 import {Program} from "../assembly/program";
 import {Dictionary} from "../util/interfaces";
+import {EventEmitter} from "@angular/core";
+import {RuntimeException} from "./runtime-exception";
 
 export class RegisterInfo
 {
@@ -90,6 +91,12 @@ export class StatusWord
     }
 }
 
+export enum Interrupt
+{
+    WRITE_NUM = 1,
+    WRITE_STRING = 2
+}
+
 export const REGISTER_INDEX: any = {
     NULL    : new RegisterInfo(0, 0, 4),
     EIP     : new RegisterInfo(1, 1, 4),
@@ -117,8 +124,9 @@ export class CPU
     private registers: MemoryBlock[];
     private _registerMap: Dictionary<MemoryView> = {};
     private _alu: ALU;
-    private _onInterrupt: EventBroadcaster<number> = new EventBroadcaster<number>();
-    private _onExit: EventBroadcaster<CPU> = new EventBroadcaster<CPU>();
+    private _onInterrupt: EventEmitter<Interrupt> = new EventEmitter<Interrupt>();
+    private _onExit: EventEmitter<CPU> = new EventEmitter<CPU>();
+    private _onError: EventEmitter<RuntimeException> = new EventEmitter<RuntimeException>();
     private _running: boolean = false;
     private _breakpoints: number[];
     private stoppedOnBreakpoint: boolean = false;
@@ -155,13 +163,17 @@ export class CPU
     {
         return this._program;
     }
-    get onInterrupt(): EventBroadcaster<number>
+    get onInterrupt(): EventEmitter<Interrupt>
     {
         return this._onInterrupt;
     }
-    get onExit(): EventBroadcaster<CPU>
+    get onExit(): EventEmitter<CPU>
     {
         return this._onExit;
+    }
+    get onError(): EventEmitter<RuntimeException>
+    {
+        return this._onError;
     }
     get alu(): ALU
     {
@@ -198,7 +210,7 @@ export class CPU
         if (this.isFinished())
         {
             this.pause();
-            this.onExit.notify(this);
+            this.onExit.emit(this);
             return;
         }
 
@@ -244,9 +256,24 @@ export class CPU
 
         return value;
     }
-    deref(memoryView: MemoryView): MemoryView
+    deref_address(address: number, size: number = 4): MemoryView
     {
-        return this.memory.load(memoryView.getValue(), memoryView.size);
+        return this.deref(new NumericConstant(address), size);
+    }
+    deref(memoryView: MemoryView, size: number = 4): MemoryView
+    {
+        let address: number = memoryView.getValue();
+
+        if (!this.memory.isValid(address))
+        {
+            throw new RuntimeException("Invalid dereference of address " + address + " at line " + this.getLine());
+        }
+        if (address + size > this.memory.size)
+        {
+            throw new RuntimeException("Memory overflow at line " + this.getLine());
+        }
+
+        return this.memory.load(address, size);
     }
     calculateEffectiveAddress(baseReg: MemoryView, indexReg?: MemoryView,
                               multiplier: number = 1, constant: number = 0): number
@@ -276,13 +303,27 @@ export class CPU
     private executeOneInstruction()
     {
         let eip: number = this.eip;
-        let instruction: Instruction = this.loadInstruction(eip);
-        let nextAddress: number = instruction.execute(this);
-        this.getRegisterByName("EIP").setValue(nextAddress);
+
+        try
+        {
+            let instruction: Instruction = this.loadInstruction(eip);
+            let nextAddress: number = instruction.execute(this);
+            this.getRegisterByName("EIP").setValue(nextAddress);
+        }
+        catch (e)
+        {
+            this.onError.emit(e);
+            this.pause();
+        }
     }
     private loadInstruction(eip: number): Instruction
     {
         return this.program.getInstructionByAddress(this, eip);
+    }
+
+    private getLine(): number
+    {
+        return this.program.lineMap.getLineByAddress(this.eip) + 1;
     }
 
     private scheduleRun()

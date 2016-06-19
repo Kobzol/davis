@@ -269,11 +269,12 @@ export class Assembler
 
         if (line.instruction !== null)
         {
-            return this.parseInstruction(line.instruction);
+            return this.parseInstruction(line.instruction, assemblyData);
         }
         else return null;
     }
-    private parseInstruction(instruction: {tag: string, type: string, name: string, operands: any[]}): EncodedInstruction
+    private parseInstruction(instruction: {tag: string, type: string, name: string, operands: any[]},
+                             assemblyData: AssemblyData): EncodedInstruction
     {
         if (!_.has(InstructionMapping, instruction.name))
         {
@@ -281,10 +282,13 @@ export class Assembler
         }
 
         let instructionInstance: Instruction = new InstructionMapping[instruction.name];
-        return new EncodedInstruction(instructionInstance, this.loadParameters(instructionInstance, instruction.operands));
+        return new EncodedInstruction(
+            instructionInstance,
+            this.loadParameters(instructionInstance, instruction.operands, assemblyData)
+        );
     }
 
-    private loadParameters(instruction: Instruction, operands: any[]): Parameter[]
+    private loadParameters(instruction: Instruction, operands: any[], assemblyData: AssemblyData): Parameter[]
     {
         this.checkParameterCompatibility(instruction, operands);
 
@@ -296,18 +300,18 @@ export class Assembler
 
         return _.map(operands, (operand) => {
             let innerOperand: any = this.getInnerParameter(operand);
-            return mapping[innerOperand.tag].call(this, this.getParameterSize(operand), innerOperand);
+            return mapping[innerOperand.tag].call(this, this.getParameterSize(operand), innerOperand, assemblyData);
         });
     }
-    private parseRegisterParameter(size: number, operand: any): Parameter
+    private parseRegisterParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
     {
         return new RegisterParameter(size, REGISTER_INDEX[this.parseRegisterName(operand)].id);
     }
-    private parseConstantParameter(size: number, operand: any): Parameter
+    private parseConstantParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
     {
         return new ConstantParameter(size, operand.value, _.has(operand, "deref"));
     }
-    private parseMemoryParameter(size: number, operand: any): Parameter
+    private parseMemoryParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
     {
         let baseRegId: number = REGISTER_INDEX[this.parseRegisterName(operand.baseRegister)].id;
 

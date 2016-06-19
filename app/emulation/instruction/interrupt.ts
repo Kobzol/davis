@@ -10,7 +10,7 @@ export class Interrupt extends Instruction
 
     execute(cpu: CPU): number
     {
-        cpu.onInterrupt.notify(this.number.getValue());
+        cpu.onInterrupt.emit(this.number.getValue());
         return cpu.eip + 1;
     }
 

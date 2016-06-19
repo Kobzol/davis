@@ -9,14 +9,12 @@ import * as _ from "lodash";
 export class MemoryComponent
 {
     @Input() memory: MemoryBlock = null;
+    @Input() wordSize: number = 1;
     @Input() width: number = 16;
 
     private getRowCount(): number
     {
-        let count: number = Math.floor(this.memory.size / this.width);
-        let upperCount: number = Math.ceil(this.memory.size / this.width);
-
-        return upperCount > count ? count + 1 : count;
+        return Math.ceil(this.memory.size / this.width / this.wordSize);
     }
     private createRange(count: number): number[]
     {
@@ -24,6 +22,6 @@ export class MemoryComponent
     }
     private createAddress(row: number, col: number): number
     {
-        return row * this.width + col;
+        return row * this.width * this.wordSize + col * this.wordSize;
     }
 }

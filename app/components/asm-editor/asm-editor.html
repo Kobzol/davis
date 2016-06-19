@@ -1,6 +1,8 @@
 <div #editor class="editor">section .data
-  db 'ahoj'
+str:
+    db 'ahoj', 0
 section .text
-  MOV EAX, EAX
+    MOV EAX, str
+    INT 2
 </div>
 <button (click)="emitCompile()">Compile</button>

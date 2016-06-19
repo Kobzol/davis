@@ -1,6 +1,6 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component, ViewChild, EventEmitter} from '@angular/core';
 import {MemoryBlock} from "./../../emulation/memory-block";
-import {CPU} from "./../../emulation/cpu";
+import {CPU, Interrupt} from "./../../emulation/cpu";
 import {Assembler} from "./../../assembly/assembler";
 import {Program} from "./../../assembly/program";
 import {AsmEditor} from "../asm-editor/asm-editor";
@@ -9,18 +9,22 @@ import {MemoryComponent} from "../memory/memory";
 import {Runtime} from "../../emulation/runtime";
 import {Process} from "../../emulation/process";
 import {ExecutionComponent} from "../execution/execution";
+import {ConsoleComponent} from "../console/console";
+import {RuntimeException} from "../../emulation/runtime-exception";
 
 @Component({
     selector: "app",
     templateUrl: "app/components/app/app.html",
-    directives: [AsmEditor, CpuComponent, MemoryComponent, ExecutionComponent]
+    directives: [AsmEditor, CpuComponent, MemoryComponent, ExecutionComponent, ConsoleComponent]
 })
 export class App
 {
     @ViewChild(AsmEditor) asmEditor: AsmEditor;
+    @ViewChild(ConsoleComponent) console: ConsoleComponent;
 
     private runtime: Runtime = new Runtime();
     private assembler: Assembler = new Assembler();
+    private cpu: CPU;
 
     private memorySize: number = 256;
     private compileErrors: string = "";
@@ -31,9 +35,11 @@ export class App
         {
             let program: Program = this.assembler.assemble(source);
             let memory: MemoryBlock = new MemoryBlock(this.memorySize);
-            let cpu: CPU = new CPU(program, memory);
-            cpu.breakpoints = this.asmEditor.breakpoints;
-            this.runtime.process = new Process(cpu);
+            this.cpu = new CPU(program, memory);
+            this.cpu.onInterrupt.subscribe((interrupt: Interrupt) => this.handleInterrupt(interrupt));
+            this.cpu.onError.subscribe((runtimeException: RuntimeException) => alert(runtimeException.message));
+            this.cpu.breakpoints = this.asmEditor.breakpoints;
+            this.runtime.process = new Process(this.cpu);
 
             this.compileErrors = "";
         }
@@ -41,6 +47,42 @@ export class App
         {
             this.compileErrors = `Error at line ${e.line}: ${e.message}`;
         }
+    }
+
+    private handleInterrupt(interrupt: Interrupt)
+    {
+        try
+        {
+            switch (interrupt)
+            {
+                case Interrupt.WRITE_NUM:
+                    this.print(this.cpu.getRegisterByName("EAX").getValue().toString());
+                    break;
+                case Interrupt.WRITE_STRING:
+                {
+                    let data: string = "";
+                    let start: number = this.cpu.getRegisterByName("EAX").getValue();
+                    while (true)
+                    {
+                        let char = this.cpu.deref_address(start, 1).getValue();
+                        if (char == 0) break;
+                        data += String.fromCharCode(char);
+                        start++;
+                    }
+                    this.print(data);
+                    break;
+                }
+            }
+        }
+        catch (e)
+        {
+            alert(e.message);
+        }
+    }
+
+    private print(value: string)
+    {
+        this.console.print(value);
     }
 
     private onBreakpointChanged(breakpoints: number[])
@@ -59,28 +101,4 @@ export class App
         }
         else return null;
     }
-
-    /*private handleInterrupt(number: number)
-    {
-        switch (number)
-        {
-            case 1:
-                this.print(this.cpu.getRegisterByName("EAX").getValue().toString());
-                break;
-            case 2:
-            {
-                let data: string = "";
-                let start = this.cpu.getRegisterByName("EAX").getValue();
-                while (true)
-                {
-                    let char = this.cpu.memory.load(start, 1).getValue();
-                    if (char == 0) break;
-                    data += String.fromCharCode(char);
-                    start++;
-                }
-                this.print(data);
-                break;
-            }
-        }
-    }*/
 }

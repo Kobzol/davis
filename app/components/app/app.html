@@ -1,7 +1,13 @@
 <asm-editor (compile)="compileSource($event)"
             [activeLine]="getActiveLine()"
             (breakpointChange)="onBreakpointChanged($event)"></asm-editor><br />
-<execution-controls [process]="runtime.process"></execution-controls>
-<memory [memory]="runtime.process?.cpu?.memory"></memory>
-<cpu [cpu]="runtime.process?.cpu"></cpu>
+<execution-controls [process]="runtime.process"></execution-controls><br />
+<label *ngFor="let item of [1, 2, 4]">
+  <input type="radio" name="memory-word-size" (click)="memory.wordSize = item"
+         [checked]="item === memory.wordSize">
+  {{item}}
+</label>
+<memory #memory [memory]="runtime.process?.cpu?.memory"></memory><br />
+<cpu [cpu]="runtime.process?.cpu"></cpu><br />
 {{ compileErrors }}
+<console></console>
