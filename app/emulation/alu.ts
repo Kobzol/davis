@@ -1,5 +1,6 @@
 import {CPU} from "./cpu";
 
+// TODO: reimplement the operations in bitwise manner
 export class ALU
 {
     constructor(private cpu: CPU)
@@ -36,7 +37,32 @@ export class ALU
     {
         return this.add(op1, this.normalize(-op2), previousCarry);
     }
-    
+
+    idivide(dividend: number, divisor: number): { value: number, remainder: number }
+    {
+        dividend = this.normalize(dividend);
+        divisor = this.normalize(divisor);
+
+        return {
+            value: this.normalize(dividend / divisor),
+            remainder: this.normalize(dividend % divisor)
+        };
+    }
+    imultiply(op1: number, op2: number): { lowerHalf: number, upperHalf: number }
+    {
+        op1 = this.normalize(op1);
+        op2 = this.normalize(op2);
+
+        let result: number = op1 * op2;
+        let lowerHalf: number = result & 0xFFFFFFFF;
+        let upperHalf = result / Math.pow(2, 32);
+
+        return {
+            lowerHalf: lowerHalf,
+            upperHalf: upperHalf
+        };
+    }
+
     inc(value: number): number
     {
         value = this.normalize(value);
@@ -46,6 +72,45 @@ export class ALU
     {
         value = this.normalize(value);
         return this.normalize(value - 1);
+    }
+
+    and(op1: number, op2: number): number
+    {
+        let result: number = op1 & op2;
+
+        this.cpu.setFlags(result);
+        this.cpu.statusWord.overflow = false;
+        this.cpu.statusWord.carry = false;
+
+        return result;
+    }
+    or(op1: number, op2: number): number
+    {
+        let result: number = op1 | op2;
+
+        this.cpu.setFlags(result);
+        this.cpu.statusWord.overflow = false;
+        this.cpu.statusWord.carry = false;
+
+        return result;
+    }
+    xor(op1: number, op2: number): number
+    {
+        let result: number = op1 ^ op2;
+
+        this.cpu.setFlags(result);
+        this.cpu.statusWord.overflow = false;
+        this.cpu.statusWord.carry = false;
+
+        return result;
+    }
+
+    extend64bit(lowerHalf: number, upperHalf: number): number
+    {
+        lowerHalf = this.normalize(lowerHalf);
+        upperHalf = this.normalize(upperHalf);
+
+        return this.normalize(upperHalf * (Math.pow(2, 32)) + lowerHalf);
     }
 
     private normalize(value: number): number

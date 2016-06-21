@@ -7,13 +7,15 @@ import {Parameter, RegisterParameter, MemoryParameter, LabelParameter, ConstantP
 import {REGISTER_INDEX} from "../emulation/cpu";
 import {
     Jump, JumpE, JumpGE, JumpLE, JumpG, JumpL, JumpO, JumpNO, JumpS, JumpNS,
-    JumpNE, JumpB, JumpAE, JumpBE, JumpA, JumpP, JumpNP, JumpCXZ, JumpECXZ
+    JumpNE, JumpB, JumpAE, JumpBE, JumpA, JumpP, JumpNP, JumpCXZ, JumpECXZ, Loop, LoopE, LoopNE
 } from "../emulation/instruction/jump";
 import {Interrupt} from "../emulation/instruction/interrupt";
 import {Pop} from "../emulation/instruction/pop";
 import {Push} from "../emulation/instruction/push";
 import {Call, Return, Enter, Leave} from "../emulation/instruction/retcall";
 import {Compare} from "../emulation/instruction/cmp";
+import {Add, AddWithCarry, Sub, SubWithBorrow, DivideSigned, MultiplySigned} from "../emulation/instruction/arithmetic";
+import {And, Or, Xor} from "../emulation/instruction/bitwise";
 var parser = require("./asm-parser.js");
 
 class Label
@@ -101,6 +103,11 @@ const InstructionMapping = {
     "RET":      Return,
     "ENTER":    Enter,
     "LEAVE":    Leave,
+    "LOOP":     Loop,
+    "LOOPE":    LoopE,
+    "LOOPZ":    LoopE,
+    "LOOPNE":   LoopNE,
+    "LOOPNZ":   LoopNE,
     "JMP":      Jump,
     "CMP":      Compare,
     "JO":       JumpO,
@@ -134,7 +141,16 @@ const InstructionMapping = {
     "JNP":      JumpNP,
     "JPO":      JumpNP,
     "JCXZ":     JumpCXZ,
-    "JECXZ":    JumpECXZ
+    "JECXZ":    JumpECXZ,
+    "ADD":      Add,
+    "ADC":      AddWithCarry,
+    "SUB":      Sub,
+    "SBB":      SubWithBorrow,
+    "IDIV":     DivideSigned,
+    "IMUL":     MultiplySigned,
+    "AND":      And,
+    "OR":       Or,
+    "XOR":      Xor
 };
 
 enum MemoryType

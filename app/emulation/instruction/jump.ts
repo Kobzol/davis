@@ -24,6 +24,34 @@ export class Jump extends UnaryOperation
     }
 }
 
+export class Loop extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        cpu.getRegisterByName("ECX").setValue(cpu.getRegisterByName("ECX").getValue() - 1);
+
+        return this.jumpIf(cpu, cpu.getRegisterByName("ECX").getValue() !== 0);
+    }
+}
+export class LoopE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        cpu.getRegisterByName("ECX").setValue(cpu.getRegisterByName("ECX").getValue() - 1);
+
+        return this.jumpIf(cpu, cpu.getRegisterByName("ECX").getValue() !== 0 && cpu.statusWord.zero);
+    }
+}
+export class LoopNE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        cpu.getRegisterByName("ECX").setValue(cpu.getRegisterByName("ECX").getValue() - 1);
+
+        return this.jumpIf(cpu, cpu.getRegisterByName("ECX").getValue() !== 0 && !cpu.statusWord.zero);
+    }
+}
+
 export class JumpO extends Jump
 {
     execute(cpu: CPU): number
