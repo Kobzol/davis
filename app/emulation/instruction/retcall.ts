@@ -1,7 +1,5 @@
 import {Instruction, UnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
-import {Parameter, ConstantParameter} from "./parameter";
-import {MemoryView} from "../memory-view";
 
 export class Enter extends Instruction
 {
@@ -23,7 +21,7 @@ export class Leave extends Instruction
     }
 }
 
-export class CallAddress extends UnaryOperation
+export class Call extends UnaryOperation
 {
     execute(cpu: CPU): number
     {

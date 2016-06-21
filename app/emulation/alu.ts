@@ -2,15 +2,16 @@ import {CPU} from "./cpu";
 
 export class ALU
 {
-    private cpu: CPU;
-
-    constructor(cpu: CPU)
+    constructor(private cpu: CPU)
     {
-        this.cpu = cpu;
+
     }
 
     add(op1: number, op2: number, previousCarry: number = 0): number
     {
+        op1 = this.normalize(op1);
+        op2 = this.normalize(op2);
+
         let result: number = 0;
         let carry: number[] = [previousCarry, 0];
 
@@ -25,22 +26,30 @@ export class ALU
             carry[1] = value / 2;
         }
 
-        this.cpu.statusWord.carry = carry[1] == 1;
-        this.cpu.statusWord.overflow = (carry[0] ^ carry[1]) == 1;
+        this.cpu.statusWord.carry = carry[1] === 1;
+        this.cpu.statusWord.overflow = (carry[0] ^ carry[1]) === 1;
         this.cpu.setFlags(result);
 
-        return result;
+        return this.normalize(result);
     }
     sub(op1: number, op2: number, previousCarry: number = 0): number
     {
-        return this.add(op1, -op2, previousCarry);
+        return this.add(op1, this.normalize(-op2), previousCarry);
     }
+    
     inc(value: number): number
     {
-        return value + 1;
+        value = this.normalize(value);
+        return this.normalize(value + 1);
     }
     dec(value: number): number
     {
-        return value - 1;
+        value = this.normalize(value);
+        return this.normalize(value - 1);
+    }
+
+    private normalize(value: number): number
+    {
+        return value | 0;
     }
 }

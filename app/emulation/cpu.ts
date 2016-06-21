@@ -7,8 +7,10 @@ import {Program} from "../assembly/program";
 import {Dictionary} from "../util/interfaces";
 import {EventEmitter} from "@angular/core";
 import {RuntimeException} from "./runtime-exception";
+import {ConditionUnit} from "./condition-unit";
+import {StatusWord} from "./status-word";
 
-export class RegisterInfo
+class RegisterInfo
 {
     private _id: number;
     private _bank: number;
@@ -38,56 +40,6 @@ export class RegisterInfo
     get bank(): number
     {
         return this._bank;
-    }
-}
-
-export class StatusWord
-{
-    private _carry: boolean = false;
-    private _zero: boolean = false;
-    private _overflow: boolean = false;
-    private _signum: boolean = false;
-    private _direction: boolean = false;
-
-    get direction():boolean {
-        return this._direction;
-    }
-    set direction(value:boolean) {
-        this._direction = value;
-    }
-
-    get signum():boolean {
-        return this._signum;
-    }
-    set signum(value:boolean) {
-        this._signum = value;
-    }
-
-    get overflow():boolean {
-        return this._overflow;
-    }
-    set overflow(value:boolean) {
-        this._overflow = value;
-    }
-
-    get zero():boolean {
-        return this._zero;
-    }
-    set zero(value:boolean) {
-        this._zero = value;
-    }
-
-    get carry():boolean {
-        return this._carry;
-    }
-    set carry(value:boolean) {
-        this._carry = value;
-    }
-
-    toString(): string
-    {
-        return "[CF: " + this.carry + ", ZF: " + this.zero + ", OF: " + this.overflow
-            + " SF: " + this.signum + ", DF: " + this.direction + "]";
     }
 }
 
@@ -124,6 +76,7 @@ export class CPU
     private registers: MemoryBlock[];
     private _registerMap: Dictionary<MemoryView> = {};
     private _alu: ALU;
+    private _conditionUnit: ConditionUnit;
     private _onInterrupt: EventEmitter<Interrupt> = new EventEmitter<Interrupt>();
     private _onExit: EventEmitter<CPU> = new EventEmitter<CPU>();
     private _onError: EventEmitter<RuntimeException> = new EventEmitter<RuntimeException>();
@@ -138,6 +91,7 @@ export class CPU
     {
         this.registers = _.map(_.range(10), () => new MemoryBlock(4));
         this._alu = new ALU(this);
+        this._conditionUnit = new ConditionUnit(this);
 
         _.keys(REGISTER_INDEX).forEach((key) =>
         {
@@ -178,6 +132,10 @@ export class CPU
     get alu(): ALU
     {
         return this._alu;
+    }
+    get conditionUnit(): ConditionUnit
+    {
+        return this._conditionUnit;
     }
     get registerMap(): Dictionary<MemoryView>
     {
@@ -283,8 +241,15 @@ export class CPU
     }
     setFlags(value: number)
     {
-        this.status.zero = value == 0;
-        this.status.signum = value < 0;
+        this.status.zero = value === 0;
+        this.status.signum = (value & (1 << 31)) !== 0;
+
+        let parity: number = 0;
+        for (let i = 0; i < 8; i++)
+        {
+            parity += ((value & (1 << i)) !== 0) ? 1 : 0;
+        }
+        this.status.parity = parity % 2 === 0;
     }
 
     getRegisterByName(name: string): MemoryView

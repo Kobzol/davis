@@ -1,9 +1,6 @@
-import * as _ from "lodash";
-import {UnaryOperation, Instruction} from "./instruction";
+import {UnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
-import {Parameter, ConstantParameter} from "./parameter";
-import {MemoryView} from "../memory-view";
-import {CONDITION_INDEX, ConditionInfo, Condition} from "./condition";
+import {Parameter} from "./parameter";
 
 export class Jump extends UnaryOperation
 {
@@ -20,28 +17,144 @@ export class Jump extends UnaryOperation
             [Parameter.Memory]
         ];
     }
+
+    protected jumpIf(cpu: CPU, condition: boolean): number
+    {
+        return condition ? this.target.getValue() : cpu.eip + 1;
+    }
 }
 
-export class ConditionalJump extends Instruction
+export class JumpO extends Jump
 {
-    private condition: MemoryView;
-    private target: MemoryView;
-
     execute(cpu: CPU): number
     {
-        let conditionClass: any = this.findCondition(this.condition.getValue());
-        let jump: boolean = new conditionClass().shouldJump(cpu);
-        return jump ? this.target.getValue() : (cpu.eip + 1);
+        return this.jumpIf(cpu, cpu.conditionUnit.overflow);
     }
-
-    private findCondition(code: number): any
+}
+export class JumpNO extends Jump
+{
+    execute(cpu: CPU): number
     {
-        return _.find(CONDITION_INDEX, (info: ConditionInfo) => info.code == code).cls;
+        return this.jumpIf(cpu, !cpu.conditionUnit.overflow);
     }
+}
 
-    loadParameters(condition: MemoryView, target: MemoryView)
+export class JumpS extends Jump
+{
+    execute(cpu: CPU): number
     {
-        this.condition = condition;
-        this.target = target;
+        return this.jumpIf(cpu, cpu.conditionUnit.sign);
+    }
+}
+export class JumpNS extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.sign);
+    }
+}
+
+export class JumpE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.equal);
+    }
+}
+export class JumpNE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.equal);
+    }
+}
+
+export class JumpB extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.below);
+    }
+}
+export class JumpAE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.below);
+    }
+}
+
+export class JumpA extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.above);
+    }
+}
+export class JumpBE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.above);
+    }
+}
+
+export class JumpL extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.less);
+    }
+}
+export class JumpGE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.less);
+    }
+}
+
+export class JumpLE extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.greater);
+    }
+}
+export class JumpG extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.greater);
+    }
+}
+
+export class JumpP extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.conditionUnit.parity);
+    }
+}
+export class JumpNP extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, !cpu.conditionUnit.parity);
+    }
+}
+
+export class JumpCXZ extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.getRegisterByName("CX").getValue() === 0);
+    }
+}
+export class JumpECXZ extends Jump
+{
+    execute(cpu: CPU): number
+    {
+        return this.jumpIf(cpu, cpu.getRegisterByName("ECX").getValue() === 0);
     }
 }

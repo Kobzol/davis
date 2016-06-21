@@ -1,22 +1,19 @@
 import * as _ from "lodash";
-import {MemoryBlock} from "../emulation/memory-block";
-import {ClearCarry} from "../emulation/instruction/flags";
-import {SetCarry} from "../emulation/instruction/flags";
-import {SetDirection} from "../emulation/instruction/flags";
-import {ClearDirection} from "../emulation/instruction/flags";
-import {LineMap} from "./program";
-import {Program} from "./program";
+import {LineMap, Program} from "./program";
 import {EncodedInstruction} from "./encoding";
-import {Parameter} from "../emulation/instruction/parameter";
 import {Move} from "../emulation/instruction/mov";
 import {Instruction} from "../emulation/instruction/instruction";
-import {RegisterParameter} from "../emulation/instruction/parameter";
-import {ConstantParameter} from "../emulation/instruction/parameter";
+import {Parameter, RegisterParameter, MemoryParameter, LabelParameter, ConstantParameter} from "../emulation/instruction/parameter";
 import {REGISTER_INDEX} from "../emulation/cpu";
-import {MemoryParameter} from "../emulation/instruction/parameter";
-import {Jump} from "../emulation/instruction/jump";
-import {LabelParameter} from "../emulation/instruction/parameter";
+import {
+    Jump, JumpE, JumpGE, JumpLE, JumpG, JumpL, JumpO, JumpNO, JumpS, JumpNS,
+    JumpNE, JumpB, JumpAE, JumpBE, JumpA, JumpP, JumpNP, JumpCXZ, JumpECXZ
+} from "../emulation/instruction/jump";
 import {Interrupt} from "../emulation/instruction/interrupt";
+import {Pop} from "../emulation/instruction/pop";
+import {Push} from "../emulation/instruction/push";
+import {Call, Return, Enter, Leave} from "../emulation/instruction/retcall";
+import {Compare} from "../emulation/instruction/cmp";
 var parser = require("./asm-parser.js");
 
 class Label
@@ -96,9 +93,48 @@ export class AssemblyException
 }
 
 const InstructionMapping = {
-    "MOV": Move,
-    "JMP": Jump,
-    "INT": Interrupt
+    "MOV":      Move,
+    "INT":      Interrupt,
+    "POP":      Pop,
+    "PUSH":     Push,
+    "CALL":     Call,
+    "RET":      Return,
+    "ENTER":    Enter,
+    "LEAVE":    Leave,
+    "JMP":      Jump,
+    "CMP":      Compare,
+    "JO":       JumpO,
+    "JNO":      JumpNO,
+    "JS":       JumpS,
+    "JNS":      JumpNS,
+    "JE":       JumpE,
+    "JZ":       JumpE,
+    "JNE":      JumpNE,
+    "JNZ":      JumpNE,
+    "JB":       JumpB,
+    "JNAE":     JumpB,
+    "JC":       JumpB,
+    "JNB":      JumpAE,
+    "JAE":      JumpAE,
+    "JNC":      JumpAE,
+    "JBE":      JumpBE,
+    "JNA":      JumpBE,
+    "JA":       JumpA,
+    "JNBE":     JumpA,
+    "JL":       JumpL,
+    "JNGE":     JumpL,
+    "JGE":      JumpGE,
+    "JNL":      JumpGE,
+    "JLE":      JumpLE,
+    "JNG":      JumpLE,
+    "JG":       JumpG,
+    "JNLE":     JumpG,
+    "JP":       JumpP,
+    "JPE":      JumpP,
+    "JNP":      JumpNP,
+    "JPO":      JumpNP,
+    "JCXZ":     JumpCXZ,
+    "JECXZ":    JumpECXZ
 };
 
 enum MemoryType
