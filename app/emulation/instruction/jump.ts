@@ -1,21 +1,11 @@
-import {UnaryOperation} from "./instruction";
+import {ReadUnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
-import {Parameter} from "./parameter";
 
-export class Jump extends UnaryOperation
+export class Jump extends ReadUnaryOperation
 {
     execute(cpu: CPU): number
     {
         return this.target.getValue();
-    }
-
-    getValidParameters(): string[][]
-    {
-        return [
-            [Parameter.Label],
-            [Parameter.Constant],
-            [Parameter.Memory]
-        ];
     }
 
     protected jumpIf(cpu: CPU, condition: boolean): number

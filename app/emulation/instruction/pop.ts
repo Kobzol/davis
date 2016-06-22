@@ -1,9 +1,7 @@
-import {Instruction, UnaryOperation} from "./instruction";
+import {WriteUnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
-import {MemoryView} from "../memory-view";
-import {Parameter, RegisterParameter} from "./parameter";
 
-export class Pop extends UnaryOperation
+export class Pop extends WriteUnaryOperation
 {
     execute(cpu: CPU): number
     {

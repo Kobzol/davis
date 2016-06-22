@@ -1,10 +1,9 @@
-import {Instruction} from "./instruction";
+import {Instruction, ReadUnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
 import {Parameter} from "./parameter";
-import {ConstantParameter} from "./parameter";
 import {MemoryView} from "../memory-view";
 
-export class Interrupt extends Instruction
+export class Interrupt extends ReadUnaryOperation
 {
     private number: MemoryView;
 
@@ -17,13 +16,5 @@ export class Interrupt extends Instruction
     loadParameters(number: MemoryView): void
     {
         this.number = number;
-    }
-
-    getValidParameters(): string[][]
-    {
-        return [
-            [Parameter.Constant],
-            [Parameter.Reg]
-        ]
     }
 }

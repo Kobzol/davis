@@ -1,7 +1,6 @@
-import {Instruction, BinaryOperation} from "./instruction";
+import {BinaryOperation} from "./instruction";
 import {CPU} from "../cpu";
 import {MemoryView} from "../memory-view";
-import {Parameter} from "./parameter";
 
 export class Move extends BinaryOperation
 {

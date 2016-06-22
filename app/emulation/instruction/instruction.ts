@@ -16,6 +16,21 @@ export abstract class Instruction
             [Parameter.DerefConstant, Parameter.Constant]
         ];
     }
+    static get UNARY_READ_PARAMS(): string[][] {
+        return [
+            [Parameter.Constant],
+            [Parameter.Reg],
+            [Parameter.Memory],
+            [Parameter.DerefConstant]
+        ];
+    }
+    static get UNARY_WRITE_PARAMS(): string[][] {
+        return [
+            [Parameter.Reg],
+            [Parameter.Memory],
+            [Parameter.DerefConstant]
+        ];
+    }
 
     get validParameters(): string[][]
     {
@@ -38,6 +53,21 @@ export abstract class UnaryOperation extends Instruction
     loadParameters(target: MemoryView)
     {
         this.target = target;
+    }
+}
+
+export abstract class ReadUnaryOperation extends UnaryOperation
+{
+    get validParameters(): string[][]
+    {
+        return Instruction.UNARY_READ_PARAMS;
+    }
+}
+export abstract class WriteUnaryOperation extends UnaryOperation
+{
+    get validParameters(): string[][]
+    {
+        return Instruction.UNARY_WRITE_PARAMS;
     }
 }
 

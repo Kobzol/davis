@@ -1,12 +1,7 @@
-import {Instruction} from "./instruction";
 import {CPU} from "../cpu";
-import {MemoryView} from "../memory-view";
-import {Parameter} from "./parameter";
-import {RegisterParameter} from "./parameter";
-import {ConstantParameter} from "./parameter";
-import {UnaryOperation} from "./instruction";
+import {ReadUnaryOperation} from "./instruction";
 
-export class Push extends UnaryOperation
+export class Push extends ReadUnaryOperation
 {
     execute(cpu: CPU): number
     {

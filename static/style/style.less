@@ -24,12 +24,12 @@
         height: 350px;
 
         .active-line {
-          background-color: red;
+          background-color: #1E90FF;
         }
 
         .ace_gutter-cell.ace_breakpoint {
-          border-radius: 20px 0 0 20px;
-          box-shadow: 0 0 1px 1px red inset;
+          background: url("../img/breakpoint.png") 1px 1px no-repeat no-repeat;
+          background-size: 12px 12px;
         }
       }
       .assemble {
@@ -52,6 +52,19 @@
 
     .clear {
       margin-top: 10px;
+    }
+  }
+  .cpu-wrapper {
+    .label {
+      display: inline-block;
+      width: 40px;
+      text-align: center;
+    }
+
+    .register {
+      .label {
+        width: 50px;
+      }
     }
   }
   .memory-wrapper {

@@ -31,8 +31,14 @@ export class App
 
     ngAfterViewInit()
     {
-        this.asmEditor.text = "section .text\n" +
-        "   MOV [0], 5";
+        this.asmEditor.text =
+`section .data
+    str: db 'Hello world!', 0
+section .text
+    MOV EAX, str
+    INT 2       ; write string from EAX syscall
+`
+        ;
     }
 
     private compileSource(source: string)
