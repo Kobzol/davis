@@ -65,7 +65,11 @@ export const REGISTER_INDEX: any = {
     ECX     : new RegisterInfo(28, 6, 4),
     CX      : new RegisterInfo(29, 6, 2),
     CH      : new RegisterInfo(30, 6, 1, 1),
-    CL      : new RegisterInfo(31, 6, 1)
+    CL      : new RegisterInfo(31, 6, 1),
+    ESI     : new RegisterInfo(32, 7, 4),
+    SI      : new RegisterInfo(33, 7, 2),
+    EDI     : new RegisterInfo(34, 8, 4),
+    DI      : new RegisterInfo(35, 8, 2)
 };
 
 export class CPU

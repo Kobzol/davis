@@ -1,7 +1,7 @@
 import {Component, ViewChild, EventEmitter} from '@angular/core';
 import {MemoryBlock} from "./../../emulation/memory-block";
 import {CPU, Interrupt} from "./../../emulation/cpu";
-import {Assembler} from "./../../assembly/assembler";
+import {Assembler, AssemblyException} from "./../../assembly/assembler";
 import {Program} from "./../../assembly/program";
 import {AsmEditor} from "../asm-editor/asm-editor";
 import {CpuComponent} from "../cpu/cpu";
@@ -29,6 +29,12 @@ export class App
     private memorySize: number = 256;
     private compileErrors: string = "";
 
+    ngAfterViewInit()
+    {
+        this.asmEditor.text = "section .text\n" +
+        "   MOV [0], 5";
+    }
+
     private compileSource(source: string)
     {
         try
@@ -45,7 +51,11 @@ export class App
         }
         catch (e)
         {
-            this.compileErrors = `Error at line ${e.line}: ${e.message}`;
+            if (e instanceof AssemblyException)
+            {
+                this.compileErrors = `Error at line ${e.line}: ${e.message}`;
+            }
+            else throw e;
         }
     }
 

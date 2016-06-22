@@ -29,7 +29,7 @@ class Label
 class LabelResolver
 {
     private labels: any = {};
-    private unresolvedParameters: LabelParameter[] = [];
+    private unresolvedParameters: { labelParameter: LabelParameter, line: number }[] = [];
 
     addLabel(address: number, label: string, local: boolean = false)
     {
@@ -42,6 +42,26 @@ class LabelResolver
 
         this.labels[label] = new Label(label, local, address);
     }
+
+    markUnresolvedParameter(labelParameter: LabelParameter, line: number)
+    {
+        this.unresolvedParameters.push({
+            labelParameter: labelParameter,
+            line: line
+        });
+    }
+    resolveAddresses()
+    {
+        _.each(this.unresolvedParameters, (record: { labelParameter: LabelParameter, line: number }) => {
+            if (!_.has(this.labels, record.labelParameter.label))
+            {
+                throw new AssemblyException("Unknown label " + record.labelParameter.label, record.line + 1);
+            }
+
+            record.labelParameter.resolveLabel(this.labels[record.labelParameter.label].address);
+        });
+    }
+
     private normalizeLabelName(label: string, local: boolean, address: number): string
     {
         if (local)
@@ -65,22 +85,6 @@ class LabelResolver
     private findPreviousGlobalLabel(address: number): Label
     {
         return _.findLast(this.labels, (label: Label) => !label.local && label.address <= address);
-    }
-
-    markUnresolvedParameter(labelParameter: LabelParameter)
-    {
-        this.unresolvedParameters.push(labelParameter);
-    }
-    resolveAddresses()
-    {
-        _.each(this.unresolvedParameters, (labelParameter: LabelParameter) => {
-            if (!_.has(this.labels, labelParameter.label))
-            {
-                throw new AssemblyException("Unknown label " + labelParameter.label);
-            }
-
-            labelParameter.resolveLabel(this.labels[labelParameter.label].address);
-        });
     }
 }
 
@@ -164,7 +168,8 @@ class AssemblyData
     constructor(public textAddress: number = 0,
                 public dataAddress: number = 0,
                 public lineMap: LineMap = new LineMap(),
-                public labelResolver: LabelResolver = new LabelResolver())
+                public labelResolver: LabelResolver = new LabelResolver(),
+                public line: number = 0)
     {
 
     }
@@ -229,7 +234,8 @@ export class Assembler
 
         for (let i = 0; i < dataLines.length; i++)
         {
-            let line: number = dataLines[i].location.start.line - 1;
+            assemblyData.line = dataLines[i].location.start.line - 1;
+
             try
             {
                 memoryDefinitions = memoryDefinitions.concat(this.assembleMemoryDefinitions(dataLines[i].line, assemblyData));
@@ -238,7 +244,7 @@ export class Assembler
             {
                 if (e instanceof AssemblyException)
                 {
-                    throw new AssemblyException(e.message, line + 1, dataLines[i].line);
+                    throw new AssemblyException(e.message, assemblyData.line + 1, dataLines[i].line);
                 }
                 else throw e;
             }
@@ -288,14 +294,14 @@ export class Assembler
 
         for (let i = 0; i < textLines.length; i++)
         {
-            let line: number = textLines[i].location.start.line - 1;
+            assemblyData.line = textLines[i].location.start.line - 1;
             try
             {
                 let instruction: EncodedInstruction = this.assembleInstruction(textLines[i].line, assemblyData);
                 if (instruction !== null)
                 {
                     instructions.push(instruction);
-                    assemblyData.lineMap.mapLine(assemblyData.textAddress, line);
+                    assemblyData.lineMap.mapLine(assemblyData.textAddress, assemblyData.line);
                     assemblyData.textAddress++;
                 }
             }
@@ -303,7 +309,7 @@ export class Assembler
             {
                 if (e instanceof AssemblyException)
                 {
-                    throw new AssemblyException(e.message, line + 1, textLines[i].line);
+                    throw new AssemblyException(e.message, assemblyData.line + 1, textLines[i].line);
                 }
                 else throw e;
             }
@@ -336,13 +342,13 @@ export class Assembler
         let instructionInstance: Instruction = new InstructionMapping[instruction.name];
         return new EncodedInstruction(
             instructionInstance,
-            this.loadParameters(instructionInstance, instruction.operands, assemblyData)
+            this.loadParameters(instructionInstance, instruction.operands, instruction.name, assemblyData)
         );
     }
 
-    private loadParameters(instruction: Instruction, operands: any[], assemblyData: AssemblyData): Parameter[]
+    private loadParameters(instruction: Instruction, operands: any[], name: string, assemblyData: AssemblyData): Parameter[]
     {
-        this.checkParameterCompatibility(instruction, operands);
+        this.checkParameterCompatibility(instruction, operands, name);
 
         let mapping = {};
         mapping[Parameter.Reg] = this.parseRegisterParameter;
@@ -381,7 +387,7 @@ export class Assembler
     private parseLabelParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
     {
         let labelParameter: LabelParameter = new LabelParameter(size, operand.value, _.has(operand, "deref"));
-        assemblyData.labelResolver.markUnresolvedParameter(labelParameter);
+        assemblyData.labelResolver.markUnresolvedParameter(labelParameter, assemblyData.line);
 
         return labelParameter;
     }
@@ -393,7 +399,7 @@ export class Assembler
 
         return registerName;
     }
-    private checkParameterCompatibility(instruction: Instruction, operands: any[])
+    private checkParameterCompatibility(instruction: Instruction, operands: any[], name: string)
     {
         let parameterMask = _.map(operands, (operand) => this.getInnerParameter(operand).tag);
         let validMasks: string[][] = instruction.getValidParameters();
@@ -406,7 +412,8 @@ export class Assembler
             }
         }
 
-        throw new AssemblyException("Unknown parameter combination for instruction " + instruction.toString());
+        throw new AssemblyException("Unknown parameter combination for instruction " + name + "." +
+            " Got " + parameterMask.toString() + ", expected one of " + JSON.stringify(validMasks));
     }
     private getInnerParameter(operand: any): any
     {

@@ -13,7 +13,7 @@ Start =
         text:(text:TextLine { return { line: text, location: location() }; })*
         { return text; }
     )?
-    { return { data: data, text: text }; }
+    { return { data: data !== null ? data : [], text: text !== null ? text : []}; }
 
 EmptyLine =
 	Comment / _

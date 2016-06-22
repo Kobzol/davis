@@ -1,5 +1,6 @@
 import {CPU} from "../cpu";
 import {BinaryOperation} from "./instruction";
+import {RuntimeException} from "../runtime-exception";
 
 export class Add extends BinaryOperation
 {
@@ -39,6 +40,11 @@ export class DivideSigned extends BinaryOperation
 {
     public execute(cpu: CPU): number
     {
+        if (this.source.getValue() === 0)
+        {
+            throw new RuntimeException("Division by zero");
+        }
+
         let edx = cpu.getRegisterByName("EDX").getValue();
         let eax = cpu.getRegisterByName("EAX").getValue();
 

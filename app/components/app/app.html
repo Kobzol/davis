@@ -1,13 +1,36 @@
-<asm-editor (compile)="compileSource($event)"
-            [activeLine]="getActiveLine()"
-            (breakpointChange)="onBreakpointChanged($event)"></asm-editor><br />
-<execution-controls [process]="runtime.process"></execution-controls><br />
-<label *ngFor="let item of [1, 2, 4]">
-  <input type="radio" name="memory-word-size" (click)="memory.wordSize = item"
-         [checked]="item === memory.wordSize">
-  {{item}}
-</label>
-<memory #memory [memory]="runtime.process?.cpu?.memory"></memory><br />
-<cpu [cpu]="runtime.process?.cpu"></cpu><br />
-{{ compileErrors }}
-<console></console>
+<div class="column-wrapper">
+  <div class="column">
+    <div class="editor-wrapper">
+      <h1>Code</h1>
+      <asm-editor (compile)="compileSource($event)"
+                  [activeLine]="getActiveLine()"
+                  (breakpointChange)="onBreakpointChanged($event)"></asm-editor>
+      <div class="errors">{{ compileErrors }}</div>
+    </div>
+    <div class="execution-wrapper">
+      <h2>Controls</h2>
+      <execution-controls [process]="runtime.process"></execution-controls>
+    </div>
+    <div class="console-wrapper">
+      <h2>Console</h2>
+      <console></console>
+    </div>
+  </div>
+  <div class="column">
+    <div class="cpu-wrapper">
+      <cpu [cpu]="runtime.process?.cpu"></cpu>
+    </div>
+    <div class="memory-wrapper">
+      <h3>Memory</h3>
+      <div class="inner" *ngIf="runtime.hasProcess()">
+        Byte size:
+        <div class="size-wrapper">
+          <label class="size-label" *ngFor="let item of [1, 2, 4]">
+            <input type="radio" name="memory-word-size" (click)="memory.wordSize = item"
+                   [checked]="item === memory.wordSize"><span>{{item}}</span></label>
+        </div>
+        <memory #memory [memory]="runtime.process?.cpu?.memory"></memory>
+      </div>
+    </div>
+  </div>
+</div>

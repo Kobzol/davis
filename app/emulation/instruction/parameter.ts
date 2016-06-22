@@ -17,25 +17,6 @@ export abstract class Parameter
     abstract fetchData(cpu: CPU): MemoryView;
 }
 
-export class ConstantParameter extends Parameter
-{
-    constructor(size: number, private value: number, private deref: boolean)
-    {
-        super(size);
-    }
-
-    fetchData(cpu: CPU): MemoryView
-    {
-        let value: MemoryView = new NumericConstant(this.value);
-
-        if (this.deref)
-        {
-            return cpu.deref(value, this.size);
-        }
-        else return value;
-    }
-}
-
 export class RegisterParameter extends Parameter
 {
     constructor(size: number, private registerIndex: number)
@@ -66,6 +47,27 @@ export class MemoryParameter extends Parameter
         let indexReg: MemoryView = cpu.getRegisterByIndex(this.indexReg);
 
         return cpu.memory.load(cpu.calculateEffectiveAddress(baseReg, indexReg, this.multiplier, this.constant));
+    }
+}
+
+export class ConstantParameter extends Parameter
+{
+    constructor(size: number,
+                protected value: number,
+                private deref: boolean)
+    {
+        super(size);
+    }
+
+    fetchData(cpu: CPU): MemoryView
+    {
+        let value: MemoryView = new NumericConstant(this.value);
+
+        if (this.deref)
+        {
+            return cpu.deref(value, this.size);
+        }
+        else return value;
     }
 }
 

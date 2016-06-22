@@ -10,7 +10,7 @@ export class MemoryComponent
 {
     @Input() memory: MemoryBlock = null;
     @Input() wordSize: number = 1;
-    @Input() width: number = 16;
+    @Input() width: number = 10;
 
     private getRowCount(): number
     {

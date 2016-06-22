@@ -28,7 +28,9 @@ export class Move extends Instruction
             [Parameter.Reg, Parameter.Memory],
             [Parameter.Memory, Parameter.Reg],
             [Parameter.Memory, Parameter.Constant],
-            [Parameter.Reg, Parameter.Label]
+            [Parameter.Reg, Parameter.Label],
+            [Parameter.Label, Parameter.Constant],
+            [Parameter.Label, Parameter.Memory]
         ];
     }
 }

@@ -1,6 +1,4 @@
-import * as _ from "lodash";
 import {CPU} from "../cpu";
-import {Parameter} from "./parameter";
 import {MemoryView} from "../memory-view";
 
 export abstract class Instruction
@@ -8,6 +6,11 @@ export abstract class Instruction
     abstract execute(cpu: CPU): number;
     getValidParameters(): string[][] { return []; }
     loadParameters(...args: any[]): void { }
+
+    toString(): string
+    {
+        return this.constructor.toString();
+    }
 }
 
 export abstract class UnaryOperation extends Instruction

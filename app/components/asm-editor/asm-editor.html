@@ -1,8 +1,4 @@
-<div #editor class="editor">section .data
-str:
-    db 'ahoj', 0
-section .text
-    MOV EAX, str
-    INT 2
+<div class="asm-editor">
+  <div #editor class="editor"></div>
+  <button class="assemble btn btn-primary" title="Assemble" (click)="emitCompile()">Assemble</button>
 </div>
-<button (click)="emitCompile()">Compile</button>
