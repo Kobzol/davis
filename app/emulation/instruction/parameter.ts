@@ -5,9 +5,9 @@ import {CPU} from "../cpu";
 export abstract class Parameter
 {
     public static get Reg() { return "Reg"; }
-    public static get Constant() { return "Number"; }
     public static get Memory() { return "Mem"; }
-    public static get Label() { return "Label"; }
+    public static get Constant() { return "Constant"; }
+    public static get DerefConstant() { return "DerefConstant"; }
 
     constructor(protected size: number = 4)
     {
@@ -50,57 +50,39 @@ export class MemoryParameter extends Parameter
     }
 }
 
-export class ConstantParameter extends Parameter
-{
-    constructor(size: number,
-                protected value: number,
-                private deref: boolean)
-    {
-        super(size);
-    }
-
-    fetchData(cpu: CPU): MemoryView
-    {
-        let value: MemoryView = new NumericConstant(this.value);
-
-        if (this.deref)
-        {
-            return cpu.deref(value, this.size);
-        }
-        else return value;
-    }
-}
-
 export class LabelParameter extends Parameter
 {
-    private address: number = -1;
-    private _label: string;
-    private _deref: boolean;
+    protected value: number = -1;
 
-    constructor(size: number, label: string, deref: boolean = false)
+    constructor(size: number,
+                private _label: string = "")
     {
         super(size);
-
-        this._label = label;
-        this._deref = deref;
     }
 
     get label() { return this._label; }
-    get deref() { return this._deref; }
 
-    resolveLabel(address: number)
+    resolveLabel(value: number)
     {
-        this.address = address;
+        this.value = value;
     }
 
     fetchData(cpu: CPU): MemoryView
     {
-        let value: MemoryView = new NumericConstant(this.address);
+        return new NumericConstant(this.value);
+    }
+}
 
-        if (this.deref)
-        {
-            return cpu.deref(value, this.size);
-        }
-        else return value;
+export class DerefLabelParameter extends LabelParameter
+{
+    constructor(size: number,
+                label: string = "")
+    {
+        super(size, label);
+    }
+
+    fetchData(cpu: CPU): MemoryView
+    {
+        return cpu.deref(new NumericConstant(this.value), this.size);
     }
 }

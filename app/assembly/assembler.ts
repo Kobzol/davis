@@ -3,7 +3,9 @@ import {LineMap, Program} from "./program";
 import {EncodedInstruction} from "./encoding";
 import {Move} from "../emulation/instruction/mov";
 import {Instruction} from "../emulation/instruction/instruction";
-import {Parameter, RegisterParameter, MemoryParameter, LabelParameter, ConstantParameter} from "../emulation/instruction/parameter";
+import {
+    Parameter, RegisterParameter, MemoryParameter, LabelParameter, DerefLabelParameter
+} from "../emulation/instruction/parameter";
 import {REGISTER_INDEX} from "../emulation/cpu";
 import {
     Jump, JumpE, JumpGE, JumpLE, JumpG, JumpL, JumpO, JumpNO, JumpS, JumpNS,
@@ -352,24 +354,37 @@ export class Assembler
 
         let mapping = {};
         mapping[Parameter.Reg] = this.parseRegisterParameter;
-        mapping[Parameter.Constant] = this.parseConstantParameter;
+        mapping[Parameter.Constant] = this.parseLabelParameter;
+        mapping[Parameter.DerefConstant] = this.parseLabelParameter;
         mapping[Parameter.Memory] = this.parseMemoryParameter;
-        mapping[Parameter.Label] = this.parseLabelParameter;
 
         return _.map(operands, (operand) => {
             let innerOperand: any = this.getInnerParameter(operand);
-            return mapping[innerOperand.tag].call(this, this.getParameterSize(operand), innerOperand, assemblyData);
+            return mapping[this.getTag(innerOperand)].call(this, this.getParameterSize(operand), innerOperand, assemblyData);
         });
     }
-    private parseRegisterParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
+    private parseRegisterParameter(size: number, operand: any, assemblyData: AssemblyData): RegisterParameter
     {
         return new RegisterParameter(size, REGISTER_INDEX[this.parseRegisterName(operand)].id);
     }
-    private parseConstantParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
+    private parseLabelParameter(size: number, operand: any, assemblyData: AssemblyData): LabelParameter
     {
-        return new ConstantParameter(size, operand.value, _.has(operand, "deref"));
+        let labelParameter: LabelParameter;
+        if (_.has(operand, "deref") && operand.deref)
+        {
+            labelParameter = new DerefLabelParameter(size, operand.tag === "Label" ? operand.value : "");
+        }
+        else labelParameter = new LabelParameter(size, operand.tag === "Label" ? operand.value : "");
+
+        if (operand.tag === "Label")
+        {
+            assemblyData.labelResolver.markUnresolvedParameter(labelParameter, assemblyData.line);
+        }
+        else labelParameter.resolveLabel(operand.value);
+
+        return labelParameter;
     }
-    private parseMemoryParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
+    private parseMemoryParameter(size: number, operand: any, assemblyData: AssemblyData): MemoryParameter
     {
         let baseRegId: number = REGISTER_INDEX[this.parseRegisterName(operand.baseRegister)].id;
 
@@ -384,13 +399,6 @@ export class Assembler
 
         return new MemoryParameter(size, baseRegId, indexRegId, multiplier, constant);
     }
-    private parseLabelParameter(size: number, operand: any, assemblyData: AssemblyData): Parameter
-    {
-        let labelParameter: LabelParameter = new LabelParameter(size, operand.value, _.has(operand, "deref"));
-        assemblyData.labelResolver.markUnresolvedParameter(labelParameter, assemblyData.line);
-
-        return labelParameter;
-    }
 
     private parseRegisterName(operand: any): string
     {
@@ -401,8 +409,8 @@ export class Assembler
     }
     private checkParameterCompatibility(instruction: Instruction, operands: any[], name: string)
     {
-        let parameterMask = _.map(operands, (operand) => this.getInnerParameter(operand).tag);
-        let validMasks: string[][] = instruction.getValidParameters();
+        let parameterMask = _.map(operands, (operand) => this.getTag(this.getInnerParameter(operand)));
+        let validMasks: string[][] = instruction.validParameters;
 
         for (let i = 0; i < validMasks.length; i++)
         {
@@ -414,6 +422,26 @@ export class Assembler
 
         throw new AssemblyException("Unknown parameter combination for instruction " + name + "." +
             " Got " + parameterMask.toString() + ", expected one of " + JSON.stringify(validMasks));
+    }
+    private getTag(operand: any): string
+    {
+        let tag: string = operand.tag;
+        if (_.includes(["Label", "Number"], tag))
+        {
+            tag = Parameter.Constant;
+
+            if (_.has(operand, "deref") && operand.deref)
+            {
+                tag = Parameter.DerefConstant;
+            }
+        }
+        else if (tag === "Mem")
+        {
+            tag = Parameter.Memory;
+        }
+        else tag = Parameter.Reg;
+
+        return tag;
     }
     private getInnerParameter(operand: any): any
     {
