@@ -2,7 +2,7 @@
   <div class="row" *ngFor="let row of createRange(getRowCount())">
     <div class="col" *ngFor="let col of createRange(width)">
         <span class="cell" *ngIf="memory.isValid(createAddress(row, col))">
-          {{ memory.load(createAddress(row, col), wordSize).getValue() }}
+          {{ getCellValue(createAddress(row, col)) }}
         </span>
     </div>
   </div>

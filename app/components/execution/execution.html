@@ -1,6 +1,6 @@
 <div class="execution btn-group">
-  <button class="btn btn-success glyphicon glyphicon-play-circle" title="Start" [disabled]="process === null || process.isStarted()" (click)="onStart()"></button>
+  <button class="btn btn-success glyphicon glyphicon-play" title="Start" [disabled]="process === null || process.isStarted()" (click)="onStart()"></button>
   <button class="btn btn-danger glyphicon glyphicon-pause" title="Pause" [disabled]="process === null || !process.isRunning()" (click)="onPause()"></button>
-  <button class="btn btn-success glyphicon glyphicon-play" title="Continue" [disabled]="process === null || !process.isPaused()" (click)="onContinue()"></button>
+  <button class="btn btn-success glyphicon glyphicon-play-circle" title="Continue" [disabled]="process === null || !process.isPaused()" (click)="onContinue()"></button>
   <button class="btn btn-info glyphicon glyphicon-step-forward" title="Step" [disabled]="process === null || !process.isPaused()" (click)="onStep()"></button>
 </div>
