@@ -85,13 +85,13 @@ const InstructionMapping = {
     "CLC":      ClearCarry
 };
 
-export class AssemblyException
+export class AssemblyException extends Error
 {
     constructor(public message: string = "",
                 public line: number = 0,
                 public data: any = {})
     {
-
+        super(message);
     }
 }
 
