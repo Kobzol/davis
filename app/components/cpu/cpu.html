@@ -1,0 +1,7 @@
+<div class="cpu" *ngIf="cpu !== null">
+  <register [cpu]="cpu" [name]="reg" *ngFor="let reg of getRegisterKeys()"></register>
+  <div *ngFor="let flag of getFlags()">
+    <span class="label label-primary name">{{ flag.name }}</span>
+    <span class="label label-default value">{{ flag.value ? 1 : 0 }}</span>
+  </div>
+</div>
