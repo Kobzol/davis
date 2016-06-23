@@ -11,7 +11,7 @@
     "lite": "lite-server",
     "peg": "pegjs app/assembly/asm-parser.peg",
     "postinstall": "typings install",
-    "test": "tsc && concurrently \"tsc -w\" \"lite-server\"",
+    "test": "tsc && jasmine",
     "tsc": "tsc",
     "tsc:w": "tsc -w",
     "typings": "typings install",
