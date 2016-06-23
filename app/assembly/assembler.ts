@@ -20,7 +20,7 @@ import {Add, AddWithCarry, Sub, SubWithBorrow, DivideSigned, MultiplySigned} fro
 import {And, Or, Xor} from "../emulation/instruction/bitwise";
 import {LabelResolver} from "./label";
 import {SetDirection, ClearDirection, SetCarry, ClearCarry} from "../emulation/instruction/flags";
-var parser = require("./asm-parser.js");
+let parser = require("./asm-parser.js");
 
 const InstructionMapping = {
     "MOV":      Move,
@@ -121,7 +121,7 @@ export class MemoryDefinition
 // TODO: comment on empty lines
 export class Assembler
 {
-    assemble(program: string) : Program
+    assemble(program: string): Program
     {
         let parsedProgram: {text: any[], data: any[]};
 
@@ -161,7 +161,10 @@ export class Assembler
                 {
                     throw new AssemblyException(e.message, assemblyData.line + 1, dataLines[i].line);
                 }
-                else throw e;
+                else
+                {
+                    throw e;
+                }
             }
         }
 
@@ -226,7 +229,10 @@ export class Assembler
                 {
                     throw new AssemblyException(e.message, assemblyData.line + 1, textLines[i].line);
                 }
-                else throw e;
+                else
+                {
+                    throw e;
+                }
             }
         }
 
@@ -244,7 +250,10 @@ export class Assembler
         {
             return this.parseInstruction(line.instruction, assemblyData);
         }
-        else return null;
+        else
+        {
+            return null;
+        }
     }
     private parseInstruction(instruction: {tag: string, type: string, name: string, operands: any[]},
                              assemblyData: AssemblyData): EncodedInstruction
@@ -287,13 +296,19 @@ export class Assembler
         {
             labelParameter = new DerefLabelParameter(size, operand.tag === "Label" ? operand.value : "");
         }
-        else labelParameter = new LabelParameter(size, operand.tag === "Label" ? operand.value : "");
+        else
+        {
+            labelParameter = new LabelParameter(size, operand.tag === "Label" ? operand.value : "");
+        }
 
         if (operand.tag === "Label")
         {
             assemblyData.labelResolver.markUnresolvedParameter(labelParameter, assemblyData.line);
         }
-        else labelParameter.resolveLabel(operand.value);
+        else
+        {
+            labelParameter.resolveLabel(operand.value);
+        }
 
         return labelParameter;
     }
@@ -316,7 +331,10 @@ export class Assembler
     private parseRegisterName(operand: any): string
     {
         let registerName: string = operand.name;
-        if (!_.has(REGISTER_INDEX, registerName)) throw new AssemblyException("Unknown register " + registerName);
+        if (!_.has(REGISTER_INDEX, registerName))
+        {
+            throw new AssemblyException("Unknown register " + registerName);
+        }
 
         return registerName;
     }
@@ -352,19 +370,38 @@ export class Assembler
         {
             tag = Parameter.Memory;
         }
-        else tag = Parameter.Reg;
+        else if (tag === "Reg")
+        {
+            tag = Parameter.Reg;
+        }
+        else
+        {
+            throw new AssemblyException("Unexpected tag " + tag);
+        }
 
         return tag;
     }
     private getInnerParameter(operand: any): any
     {
-        if (operand.tag === "Cast") return this.getInnerParameter(operand.value);
-        else return operand;
+        if (operand.tag === "Cast")
+        {
+            return this.getInnerParameter(operand.value);
+        }
+        else
+        {
+            return operand;
+        }
     }
     private getParameterSize(operand: any): number
     {
-        if (operand.tag === "Cast") return operand.size > 0 ? operand.size : 4;
-        else return 4;
+        if (operand.tag === "Cast")
+        {
+            return operand.size > 0 ? operand.size : 4;
+        }
+        else
+        {
+            return 4;
+        }
     }
 
     private assembleLabel(label: {tag: string, name: any, local: boolean}, assemblyData: AssemblyData, memoryType: MemoryType)

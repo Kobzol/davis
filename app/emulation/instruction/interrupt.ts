@@ -1,6 +1,5 @@
-import {Instruction, ReadUnaryOperation} from "./instruction";
+import {ReadUnaryOperation} from "./instruction";
 import {CPU} from "../cpu";
-import {Parameter} from "./parameter";
 import {MemoryView} from "../memory-view";
 
 export class Interrupt extends ReadUnaryOperation

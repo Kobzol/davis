@@ -1,2 +1,2 @@
-//import "./assembler.spec";
+import "./assembler.spec";
 import "./alu.spec";

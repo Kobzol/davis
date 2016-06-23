@@ -74,7 +74,7 @@ export const REGISTER_INDEX: any = {
     DX      : new RegisterInfo(33, 9, 2),
     DH      : new RegisterInfo(34, 9, 1, 1),
     DL      : new RegisterInfo(35, 9, 1)
-    
+
 };
 
 export class CPU
@@ -162,7 +162,7 @@ export class CPU
     {
         this._breakpoints = _.filter(
             _.map(value, (row: number) => this.program.lineMap.getAddressByLine(row),
-            (value: number) => value !== null)
+            (breakpoint: number) => breakpoint !== null)
         );
     }
 
@@ -189,7 +189,10 @@ export class CPU
                 this.pause();
                 return;
             }
-            else this.stoppedOnBreakpoint = false;
+            else
+            {
+                this.stoppedOnBreakpoint = false;
+            }
         }
 
         this.executeOneInstruction();
@@ -245,7 +248,11 @@ export class CPU
     calculateEffectiveAddress(baseReg: MemoryView, indexReg?: MemoryView,
                               multiplier: number = 1, constant: number = 0): number
     {
-        if (indexReg === undefined) indexReg = this.getRegisterByName("NULL");
+        if (indexReg === undefined)
+        {
+            indexReg = this.getRegisterByName("NULL");
+        }
+
         return baseReg.getValue() + indexReg.getValue() * multiplier + constant;
     }
     setFlags(value: number)
@@ -267,7 +274,7 @@ export class CPU
     }
     getRegisterByIndex(index: number): MemoryView
     {
-        return this.getRegisterByName(_.findKey(REGISTER_INDEX, (reg: RegisterInfo) => reg.id == index));
+        return this.getRegisterByName(_.findKey(REGISTER_INDEX, (reg: RegisterInfo) => reg.id === index));
     }
 
     private hasBreakpoint(): boolean

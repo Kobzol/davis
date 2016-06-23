@@ -1,9 +1,9 @@
-import {Component, ViewChild, EventEmitter} from '@angular/core';
+import {Component, ViewChild, AfterViewInit} from "@angular/core";
 import {MemoryBlock} from "./../../emulation/memory-block";
 import {CPU, Interrupt} from "./../../emulation/cpu";
 import {Assembler, AssemblyException} from "./../../assembly/assembler";
 import {Program} from "./../../assembly/program";
-import {AsmEditor} from "../asm-editor/asm-editor";
+import {AsmEditorComponent} from "../asm-editor/asm-editor";
 import {CpuComponent} from "../cpu/cpu";
 import {MemoryComponent} from "../memory/memory";
 import {Runtime} from "../../emulation/runtime";
@@ -15,11 +15,11 @@ import {RuntimeException} from "../../emulation/runtime-exception";
 @Component({
     selector: "app",
     templateUrl: "app/components/app/app.html",
-    directives: [AsmEditor, CpuComponent, MemoryComponent, ExecutionComponent, ConsoleComponent]
+    directives: [AsmEditorComponent, CpuComponent, MemoryComponent, ExecutionComponent, ConsoleComponent]
 })
-export class App
+export class AppComponent implements AfterViewInit
 {
-    @ViewChild(AsmEditor) asmEditor: AsmEditor;
+    @ViewChild(AsmEditorComponent) asmEditor: AsmEditorComponent;
     @ViewChild(ConsoleComponent) console: ConsoleComponent;
 
     private runtime: Runtime = new Runtime();
@@ -61,7 +61,10 @@ section .text
             {
                 this.compileErrors = `Error at line ${e.line}: ${e.message}`;
             }
-            else throw e;
+            else
+            {
+                throw e;
+            }
         }
     }
 
@@ -81,7 +84,10 @@ section .text
                     while (true)
                     {
                         let char = this.cpu.deref_address(start, 1).getValue();
-                        if (char == 0) break;
+                        if (char === 0)
+                        {
+                            break;
+                        }
                         data += String.fromCharCode(char);
                         start++;
                     }
@@ -115,6 +121,9 @@ section .text
         {
             return this.runtime.process.cpu.activeLine;
         }
-        else return null;
+        else
+        {
+            return null;
+        }
     }
 }

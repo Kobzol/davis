@@ -1,11 +1,11 @@
 import {MemoryBlock} from "./memory-block";
 
-var GET_METHODS = {
+const GET_METHODS = {
     "1": ["getUint8", "getInt8"],
     "2": ["getUint16", "getInt16"],
     "4": ["getUint32", "getInt32"]
 };
-var SET_METHODS = {
+const SET_METHODS = {
     "1": ["setUint8", "setInt8"],
     "2": ["setUint16", "setInt16"],
     "4": ["setUint32", "setInt32"]
@@ -49,7 +49,10 @@ export class MemoryView
 
     getOffsetView(offset: number, byteSize?: number, signed: boolean = false)
     {
-        if (byteSize === undefined) byteSize = this.byteSize;
+        if (byteSize === undefined)
+        {
+            byteSize = this.byteSize;
+        }
 
         return new MemoryView(this.memory, byteSize, this.index + offset, signed);
     }

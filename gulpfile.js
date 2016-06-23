@@ -19,7 +19,9 @@ gulp.task('build:less', function () {
 });
 gulp.task('build:system', function(done) {
   var builder = new SystemBuilder('', 'systemjs.config.js');
-  builder.buildStatic('app/main', buildDir + '/app.min.js').then(function() {
+  builder.buildStatic('app/main', buildDir + '/app.min.js', {
+    minify: true
+  }).then(function() {
     done();
   });
 });
@@ -51,6 +53,7 @@ gulp.task('build:assets', function() {
   .pipe(gulp.dest(buildDir + "/static/img"));
 
   gulp.src("mode-assembly_x86.js")
+  .pipe(uglify())
   .pipe(gulp.dest(buildDir));
 });
 

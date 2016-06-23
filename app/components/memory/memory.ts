@@ -48,6 +48,9 @@ export class MemoryComponent
         {
             return String.fromCharCode(value);
         }
-        else return value.toString();
+        else
+        {
+            return value.toString();
+        }
     }
 }

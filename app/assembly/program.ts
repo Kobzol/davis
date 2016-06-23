@@ -16,9 +16,9 @@ export class LineMap
     {
         return _.findLast(this.mapping, (line: number, key: number) => key <= address);
     }
-    public getAddressByLine(row: number) : number
+    public getAddressByLine(row: number): number
     {
-        return Number(_.findKey(this.mapping, (line: number) => line == row));
+        return Number(_.findKey(this.mapping, (line: number) => line === row));
     }
 }
 
