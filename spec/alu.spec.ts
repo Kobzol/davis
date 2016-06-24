@@ -1,6 +1,7 @@
 import {CPU} from "../app/emulation/cpu";
 import {ALU} from "../app/emulation/alu";
 import {MemoryBlock} from "../app/emulation/memory-block";
+import {RuntimeException} from "../app/emulation/runtime-exception";
 
 describe("ALU", () => {
     let cpu: CPU;
@@ -75,5 +76,65 @@ describe("ALU", () => {
         expect(alu.sub(13678, 256897)).toEqual(-243219);
         expect(alu.sub(Math.pow(2, 33), 1000)).toEqual(-1000);
         expect(alu.sub(-8978654, 22235)).toEqual(-9000889);
+    });
+    it('Correctly handles signed division', () => {
+        expect(() => {
+            alu.idivide(1, 0);
+        }).toThrowError(RuntimeException);
+
+        var joc = jasmine.objectContaining;
+
+        expect(alu.idivide(1, 1)).toEqual(joc({
+            value: 1,
+            remainder: 0
+        }));
+
+        expect(alu.idivide(-50, 2)).toEqual(joc({
+            value: -25,
+            remainder: 0
+        }));
+
+        expect(alu.idivide(80, 3)).toEqual(joc({
+            value: 26,
+            remainder: 2
+        }));
+
+        expect(alu.idivide(Math.pow(2, 33), 4)).toEqual(joc({
+            value: 0,
+            remainder: 0
+        }));
+    });
+    it('Correctly handles signed multiplication', () => {
+        var joc = jasmine.objectContaining;
+
+        expect(alu.imultiply(0, 0)).toEqual(joc({
+            lowerHalf: 0,
+            upperHalf: 0
+        }));
+
+        expect(alu.imultiply(5687684, 0)).toEqual(joc({
+            lowerHalf: 0,
+            upperHalf: 0
+        }));
+
+        expect(alu.imultiply(68731, 1)).toEqual(joc({
+            lowerHalf: 68731,
+            upperHalf: 0
+        }));
+
+        expect(alu.imultiply(8879876, -1)).toEqual(joc({
+            lowerHalf: -8879876,
+            upperHalf: 0
+        }));
+
+        expect(alu.imultiply(568765, 2287)).toEqual(joc({
+            lowerHalf: 1300765555,
+            upperHalf: 0
+        }));
+
+        expect(alu.imultiply(Math.pow(2, 30), 4)).toEqual(joc({
+            lowerHalf: 0,
+            upperHalf: 1
+        }));
     });
 });

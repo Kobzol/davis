@@ -22,6 +22,7 @@ describe('Assembler', () =>
             `);
         }).toThrowError(AssemblyException);
     });
+
     it('Doesn\'t allow text in data section', () => {
         expect(() => {
             assembler.assemble(`
@@ -39,6 +40,7 @@ describe('Assembler', () =>
             `);
         }).toThrowError(AssemblyException);
     });
+
     it('Rejects non-existent instructions', () => {
         expect(() => {
             assembler.assemble(`
@@ -48,6 +50,7 @@ describe('Assembler', () =>
             `);
         }).toThrowError(AssemblyException);
     });
+
     it('Doesn\'t have side effects', () => {
         let source: string = `
             section .data
@@ -62,6 +65,7 @@ describe('Assembler', () =>
         expect(JSON.stringify(program.instructions)).toEqual(JSON.stringify(secondProgram.instructions));
         expect(JSON.stringify(program.memoryDefinitions)).toEqual(JSON.stringify(secondProgram.memoryDefinitions));
     });
+
     it('Correctly handles data definitions', () => {
         let program: Program = assembler.assemble(`
             section .data
@@ -86,5 +90,29 @@ describe('Assembler', () =>
         expect(memoryDefinitions[19].address).toEqual(37);
         expect(memoryDefinitions[19].size).toEqual(2);
         expect(memoryDefinitions[19].value).toEqual(10);
+    });
+
+    it('Recognizes existing labels', () => {
+        expect(() => {
+            assembler.assemble(`
+            section .data
+            data1: db 1, 2, 3
+            section .text
+            data2:
+                MOV EAX, data1
+                MOV EBX, data2
+        `);
+        }).not.toThrow();
+    });
+    it('Doesn\'t recognize non-existing labels', () => {
+        expect(() => {
+            assembler.assemble(`
+            section .data
+            data1: db 1, 2, 3
+            section .text
+            data2:
+                MOV EAX, nonExistingLabel
+        `);
+        }).toThrowError(AssemblyException);
     });
 });
