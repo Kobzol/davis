@@ -10,6 +10,7 @@ export class ExecutionComponent
     @Input() process: Process = null;
 
     @Output() start: EventEmitter<Process> = new EventEmitter<Process>();
+    @Output() stop: EventEmitter<Process> = new EventEmitter<Process>();
     @Output() continueEvent: EventEmitter<Process> = new EventEmitter<Process>();
     @Output() pause: EventEmitter<Process> = new EventEmitter<Process>();
     @Output() step: EventEmitter<Process> = new EventEmitter<Process>();
@@ -18,6 +19,11 @@ export class ExecutionComponent
     {
         this.start.emit(this.process);
         this.process.start();
+    }
+    private onStop()
+    {
+        this.stop.emit(this.process);
+        this.process.cpu.halt();
     }
     private onContinue()
     {
