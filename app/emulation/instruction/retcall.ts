@@ -25,7 +25,7 @@ export class Call extends ReadUnaryOperation
 {
     execute(cpu: CPU): number
     {
-        cpu.push(cpu.eip);
+        cpu.push(cpu.eip + 1);
         return this.target.getValue();
     }
 }

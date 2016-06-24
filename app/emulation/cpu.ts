@@ -176,8 +176,7 @@ export class CPU
     {
         if (this.isFinished())
         {
-            this.pause();
-            this.onExit.emit(this);
+            this.halt();
             return;
         }
 
@@ -206,6 +205,11 @@ export class CPU
     {
         this._running = false;
         this.clearScheduledRun();
+    }
+    halt()
+    {
+        this.pause();
+        this.onExit.emit(this);
     }
     isFinished(): boolean
     {
@@ -245,10 +249,10 @@ export class CPU
 
         return this.memory.load(address, size);
     }
-    calculateEffectiveAddress(baseReg: MemoryView, indexReg?: MemoryView,
+    calculateEffectiveAddress(baseReg: MemoryView, indexReg: MemoryView = null,
                               multiplier: number = 1, constant: number = 0): number
     {
-        if (indexReg === undefined)
+        if (indexReg === null)
         {
             indexReg = this.getRegisterByName("NULL");
         }

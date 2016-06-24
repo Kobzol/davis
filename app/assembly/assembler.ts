@@ -20,11 +20,13 @@ import {Add, AddWithCarry, Sub, SubWithBorrow, DivideSigned, MultiplySigned} fro
 import {And, Or, Xor} from "../emulation/instruction/bitwise";
 import {LabelResolver} from "./label";
 import {SetDirection, ClearDirection, SetCarry, ClearCarry} from "../emulation/instruction/flags";
+import {Halt} from "../emulation/instruction/halt";
 let parser = require("./asm-parser.js");
 
 const InstructionMapping = {
     "MOV":      Move,
     "INT":      Interrupt,
+    "HLT":     Halt,
     "POP":      Pop,
     "PUSH":     Push,
     "CALL":     Call,
@@ -316,13 +318,14 @@ export class Assembler
     {
         let baseRegId: number = REGISTER_INDEX[this.parseRegisterName(operand.baseRegister)].id;
 
-        let indexRegId: number = 0;
-        if (operand.indexRegister !== null)
+        let indexRegId: number = REGISTER_INDEX.NULL.id;
+        let multiplier: number = 1;
+        if (operand.index !== null)
         {
-            indexRegId = REGISTER_INDEX[this.parseRegisterName(operand.indexRegister)].id;
+            indexRegId = REGISTER_INDEX[this.parseRegisterName(operand.index.register)].id;
+            multiplier = operand.index.multiplier;
         }
 
-        let multiplier: number = operand.multiplier !== null ? operand.multiplier.value : 0;
         let constant: number = operand.constant !== null ? operand.constant.value : 0;
 
         return new MemoryParameter(size, baseRegId, indexRegId, multiplier, constant);

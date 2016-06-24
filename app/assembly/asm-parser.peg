@@ -48,7 +48,8 @@ Instruction =
     MemoryInstruction / ArithmeticInstruction
 
 NoOperandInstruction =
-	("CLD" / "STD" / "CLC" / "STC" / "ENTER" / "RET" / "LEAVE") { return { tag: "Instruction", type: "NoOperand", name: text() }; }
+	("CLD" / "STD" / "CLC" / "STC" / "ENTER" / "RET" / "LEAVE" / "HLT")
+	{ return { tag: "Instruction", type: "NoOperand", name: text() }; }
 
 JumpInstruction =
 	name:$(
@@ -101,19 +102,25 @@ RegisterDereferenceExpression =
     	return {
     		tag: "Mem",
         	baseRegister: baseReg,
-        	indexRegister: indexer !== null ? indexer.indexRegister : null,
-        	multiplier: indexer !== null && indexer.offset !== null ? indexer.offset.multiplier : null,
-        	constant: indexer !== null && indexer.offset !== null ? indexer.offset.constant : null
+        	index: indexer !== null ? indexer.index : null,
+        	constant: indexer !== null && indexer.constant !== null ? indexer.constant : null
     	};
     })
 
 IndexExpression =
 	(
-    	"+" _ indexReg:Register _
-    	offset:("*" _ multiplier:Number _
-        				constant: ("+" _ constant:Number { return constant; } )?
-                        { return { multiplier: multiplier, constant: constant }; })?
-    ) { return { indexRegister: indexReg.name, offset: offset }; }
+        index:("+" _ register:Register _ "*" _ multiplier:Number
+        	{ return { register: register, multiplier: multiplier }; })?
+        _
+        constant: (operator:$("+" / "-") _ constant:Number
+                    {
+                    	if (operator === "-")
+                    	{
+                    		constant.value *= -1;
+                    	}
+                    	return constant;
+                    } )?
+    ) { return { index: index, constant: constant }; }
 
 Register =
 	(

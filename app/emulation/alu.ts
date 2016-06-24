@@ -1,4 +1,5 @@
 import {CPU} from "./cpu";
+import {RuntimeException} from "./runtime-exception";
 
 // TODO: reimplement the operations in bitwise manner
 export class ALU
@@ -43,6 +44,11 @@ export class ALU
         dividend = this.normalize(dividend);
         divisor = this.normalize(divisor);
 
+        if (divisor === 0)
+        {
+            throw new RuntimeException("Division by zero");
+        }
+
         return {
             value: this.normalize(dividend / divisor),
             remainder: this.normalize(dividend % divisor)
@@ -58,8 +64,8 @@ export class ALU
         let upperHalf = result / Math.pow(2, 32);
 
         return {
-            lowerHalf: lowerHalf,
-            upperHalf: upperHalf
+            lowerHalf: this.normalize(lowerHalf),
+            upperHalf: this.normalize(upperHalf)
         };
     }
 

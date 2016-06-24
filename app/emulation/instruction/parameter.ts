@@ -1,6 +1,6 @@
 import {MemoryView} from "../memory-view";
 import {NumericConstant} from "../memory-view";
-import {CPU} from "../cpu";
+import {CPU, REGISTER_INDEX} from "../cpu";
 
 export abstract class Parameter
 {
@@ -34,7 +34,7 @@ export class MemoryParameter extends Parameter
 {
     constructor(size: number,
                 private baseReg: number,
-                private indexReg: number = 0,
+                private indexReg: number = REGISTER_INDEX.NULL.id,
                 private multiplier: number = 1,
                 private constant: number = 0)
     {

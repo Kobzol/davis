@@ -34,7 +34,9 @@ export abstract class Instruction
 
     get validParameters(): string[][]
     {
-        return [];
+        return [
+            []
+        ];
     }
 
     abstract execute(cpu: CPU): number;
