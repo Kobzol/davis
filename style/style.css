@@ -19,7 +19,7 @@
   height: 350px;
 }
 .wrapper .editor-wrapper .asm-editor .editor .active-line {
-  background-color: #1E90FF;
+  background-color: #1E90FF !important;
 }
 .wrapper .editor-wrapper .asm-editor .editor .ace_gutter-cell.ace_breakpoint {
   background: url("../static/img/breakpoint.png") 1px 1px no-repeat no-repeat;
@@ -46,6 +46,9 @@
 }
 .wrapper .cpu-wrapper .register .label {
   width: 50px;
+}
+.wrapper .cpu-wrapper .tick-rate input[type=range] {
+  width: 80px;
 }
 .wrapper .memory-wrapper .size-wrapper {
   display: flex;
