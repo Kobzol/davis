@@ -1,7 +1,7 @@
-import {ReadUnaryOperation} from "./instruction";
+import {UnaryReadOperation} from "./instruction";
 import {CPU} from "../cpu";
 
-export class Jump extends ReadUnaryOperation
+export class Jump extends UnaryReadOperation
 {
     execute(cpu: CPU): number
     {

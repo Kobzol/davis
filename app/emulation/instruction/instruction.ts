@@ -58,14 +58,14 @@ export abstract class UnaryOperation extends Instruction
     }
 }
 
-export abstract class ReadUnaryOperation extends UnaryOperation
+export abstract class UnaryReadOperation extends UnaryOperation
 {
     get validParameters(): string[][]
     {
         return Instruction.UNARY_READ_PARAMS;
     }
 }
-export abstract class WriteUnaryOperation extends UnaryOperation
+export abstract class UnaryWriteOperation extends UnaryOperation
 {
     get validParameters(): string[][]
     {

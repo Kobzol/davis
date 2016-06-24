@@ -16,7 +16,10 @@ import {Pop} from "../emulation/instruction/pop";
 import {Push} from "../emulation/instruction/push";
 import {Call, Return, Enter, Leave} from "../emulation/instruction/retcall";
 import {Compare} from "../emulation/instruction/cmp";
-import {Add, AddWithCarry, Sub, SubWithBorrow, DivideSigned, MultiplySigned} from "../emulation/instruction/arithmetic";
+import {
+    Add, AddWithCarry, Sub, SubWithBorrow, DivideSigned, MultiplySigned,
+    Decrement, Increment
+} from "../emulation/instruction/arithmetic";
 import {And, Or, Xor} from "../emulation/instruction/bitwise";
 import {LabelResolver} from "./label";
 import {SetDirection, ClearDirection, SetCarry, ClearCarry} from "../emulation/instruction/flags";
@@ -78,6 +81,8 @@ const InstructionMapping = {
     "SBB":      SubWithBorrow,
     "IDIV":     DivideSigned,
     "IMUL":     MultiplySigned,
+    "DEC":      Decrement,
+    "INC":      Increment,
     "AND":      And,
     "OR":       Or,
     "XOR":      Xor,
@@ -262,7 +267,7 @@ export class Assembler
     {
         if (!_.has(InstructionMapping, instruction.name))
         {
-            throw new AssemblyException("Unknown instruction type " + instruction.type);
+            throw new AssemblyException("Unknown instruction name " + instruction.name);
         }
 
         let instructionInstance: Instruction = new InstructionMapping[instruction.name];

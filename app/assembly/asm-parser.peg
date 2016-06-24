@@ -45,7 +45,7 @@ Label =
 
 Instruction =
 	NoOperandInstruction / JumpInstruction / SingleOperandInstruction /
-    MemoryInstruction / ArithmeticInstruction
+    MemoryInstruction / ArithmeticInstruction / CompareInstruction
 
 NoOperandInstruction =
 	("CLD" / "STD" / "CLC" / "STC" / "ENTER" / "RET" / "LEAVE" / "HLT")
@@ -74,8 +74,18 @@ MemoryInstruction =
     { return { tag: "Instruction", type: "Memory", name: name, operands: [target, source] }; }
 
 ArithmeticInstruction =
-	name:$("ADD" / "SUB" / "ADC" / "SBB" / "DIV" / "IDIV" / "MUL" / "IMUL") _ target:WritableExpression _ source:ReadableExpression
-    { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [target, source] }; }
+	(
+	    name:$("ADD" / "SUB" / "ADC" / "SBB") _ target:WritableExpression "," _ source:ReadableExpression
+        { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [target, source] }; }
+    ) /
+    (
+        name:$("MUL" / "IMUL" / "DIV" / "IDIV") _ source:ReadableExpression
+        { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [source] }; }
+    )
+
+CompareInstruction =
+    name:$("CMP") _ op1:ReadableExpression _ "," _ op2:ReadableExpression
+    { return { tag: "Instruction", type: "Compare", name: name, operands: [op1, op2] }; }
 
 WritableExpression =
 	Register /

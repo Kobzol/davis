@@ -1,5 +1,5 @@
 import {CPU} from "../cpu";
-import {BinaryOperation} from "./instruction";
+import {BinaryOperation, UnaryReadOperation, UnaryWriteOperation} from "./instruction";
 import {RuntimeException} from "../runtime-exception";
 
 export class Add extends BinaryOperation
@@ -36,11 +36,28 @@ export class SubWithBorrow extends Sub
     }
 }
 
-export class DivideSigned extends BinaryOperation
+export class Increment extends UnaryWriteOperation
+{
+    execute(cpu: CPU): number
+    {
+        this.target.setValue(cpu.alu.inc(this.target.getValue()));
+        return cpu.eip + 1;
+    }
+}
+export class Decrement extends UnaryWriteOperation
+{
+    execute(cpu: CPU): number
+    {
+        this.target.setValue(cpu.alu.dec(this.target.getValue()));
+        return cpu.eip + 1;
+    }
+}
+
+export class DivideSigned extends UnaryReadOperation
 {
     public execute(cpu: CPU): number
     {
-        if (this.source.getValue() === 0)
+        if (this.target.getValue() === 0)
         {
             throw new RuntimeException("Division by zero");
         }
@@ -49,7 +66,7 @@ export class DivideSigned extends BinaryOperation
         let eax = cpu.getRegisterByName("EAX").getValue();
 
         let value: number = cpu.alu.extend64bit(eax, edx);
-        let result: { value: number, remainder: number } = cpu.alu.idivide(value, this.source.getValue());
+        let result: { value: number, remainder: number } = cpu.alu.idivide(value, this.target.getValue());
 
         cpu.getRegisterByName("EDX").setValue(result.remainder);
         cpu.getRegisterByName("EAX").setValue(result.value);
@@ -57,12 +74,12 @@ export class DivideSigned extends BinaryOperation
         return cpu.eip + 1;
     }
 }
-export class MultiplySigned extends BinaryOperation
+export class MultiplySigned extends UnaryReadOperation
 {
     public execute(cpu: CPU): number
     {
         let eax = cpu.getRegisterByName("EAX").getValue();
-        let result: { lowerHalf: number, upperHalf: number } = cpu.alu.imultiply(eax, this.source.getValue());
+        let result: { lowerHalf: number, upperHalf: number } = cpu.alu.imultiply(eax, this.target.getValue());
 
         cpu.getRegisterByName("EDX").setValue(result.upperHalf);
         cpu.getRegisterByName("EAX").setValue(result.lowerHalf);

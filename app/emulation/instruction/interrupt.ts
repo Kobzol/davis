@@ -1,8 +1,8 @@
-import {ReadUnaryOperation} from "./instruction";
+import {UnaryReadOperation} from "./instruction";
 import {CPU} from "../cpu";
 import {MemoryView} from "../memory-view";
 
-export class Interrupt extends ReadUnaryOperation
+export class Interrupt extends UnaryReadOperation
 {
     private number: MemoryView;
 

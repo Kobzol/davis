@@ -1,7 +1,7 @@
 import {CPU} from "../cpu";
-import {ReadUnaryOperation} from "./instruction";
+import {UnaryReadOperation} from "./instruction";
 
-export class Push extends ReadUnaryOperation
+export class Push extends UnaryReadOperation
 {
     execute(cpu: CPU): number
     {

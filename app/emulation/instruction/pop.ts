@@ -1,7 +1,7 @@
-import {WriteUnaryOperation} from "./instruction";
+import {UnaryWriteOperation} from "./instruction";
 import {CPU} from "../cpu";
 
-export class Pop extends WriteUnaryOperation
+export class Pop extends UnaryWriteOperation
 {
     execute(cpu: CPU): number
     {

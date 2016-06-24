@@ -1,4 +1,4 @@
-import {Instruction, ReadUnaryOperation} from "./instruction";
+import {Instruction, UnaryReadOperation} from "./instruction";
 import {CPU} from "../cpu";
 
 export class Enter extends Instruction
@@ -21,7 +21,7 @@ export class Leave extends Instruction
     }
 }
 
-export class Call extends ReadUnaryOperation
+export class Call extends UnaryReadOperation
 {
     execute(cpu: CPU): number
     {
