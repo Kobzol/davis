@@ -122,10 +122,15 @@ factorial:
                     this.print(data);
                     break;
                 }
+                default:
+                {
+                    throw new RuntimeException("Unknown interrupt code: " + interrupt);
+                }
             }
         }
         catch (e)
         {
+            this.cpu.pause();
             alert(e.message);
         }
     }
