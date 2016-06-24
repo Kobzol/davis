@@ -33,7 +33,12 @@ export class AppComponent implements AfterViewInit
     {
         this.asmEditor.text =
 `section .data
+hello:
+    db 'Hello world!', 10, 0
 section .text
+    MOV EAX, hello
+    INT 2   ; print string EAX
+
     PUSH 5
     CALL factorial
     POP ECX
@@ -51,6 +56,7 @@ factorial:
 .recurse:
     MOV EAX, [EBP + 8]
     DEC EAX
+
     PUSH EAX
     CALL factorial
     POP ECX
@@ -105,7 +111,7 @@ factorial:
                     let start: number = this.cpu.getRegisterByName("EAX").getValue();
                     while (true)
                     {
-                        let char = this.cpu.deref_address(start, 1).getValue();
+                        let char = this.cpu.derefAddress(start, 1).getValue();
                         if (char === 0)
                         {
                             break;

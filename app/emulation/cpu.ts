@@ -96,7 +96,7 @@ export class CPU
 
     constructor(private _program: Program,
                 private _memory: MemoryBlock,
-                private _tick: number = 500)
+                private _tickRate: number = 500)
     {
         this.registers = _.map(_.range(10), () => new MemoryBlock(4));
         this._alu = new ALU(this);
@@ -110,6 +110,14 @@ export class CPU
         this.reset();
     }
 
+    get tickRate(): number
+    {
+        return this._tickRate;
+    }
+    set tickRate(value: number)
+    {
+        this._tickRate = value;
+    }
     get eip(): number
     {
         return this.registerMap["EIP"].getValue();
@@ -235,7 +243,7 @@ export class CPU
 
         return value;
     }
-    deref_address(address: number, size: number = 4): MemoryView
+    derefAddress(address: number, size: number = 4): MemoryView
     {
         return this.deref(new NumericConstant(address), size);
     }
@@ -319,7 +327,7 @@ export class CPU
     private scheduleRun()
     {
         this.clearScheduledRun();
-        this.scheduleTimeout = setTimeout(() => this.tickStep(), this._tick);
+        this.scheduleTimeout = setTimeout(() => this.tickStep(), this.tickRate);
     }
     private clearScheduledRun()
     {
