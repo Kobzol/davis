@@ -161,16 +161,16 @@ export class CPU
     set breakpoints(value: number[])
     {
         this._breakpoints = _.filter(
-            _.map(value, (row: number) => this.program.lineMap.getAddressByLine(row),
-            (breakpoint: number) => breakpoint !== null)
+            _.map(value, (row: number) => this.program.lineMap.getAddressByLine(row)),
+            (breakpoint: number) => breakpoint !== null
         );
     }
 
     reset()
     {
         this.getRegisterByName("EIP").setValue(0);
-        this.getRegisterByName("ESP").setValue(this.memory.size - 1);
-        this.getRegisterByName("EBP").setValue(this.memory.size - 1);
+        this.getRegisterByName("ESP").setValue(this.memory.size);
+        this.getRegisterByName("EBP").setValue(this.memory.size);
     }
     step()
     {
