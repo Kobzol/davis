@@ -26,7 +26,7 @@ export class LabelResolver
         }
 
         this.labels[label] = new Label(label, local, address);
-        
+
         if (!local)
         {
             this.lastGlobalLabel = this.labels[label];
@@ -41,10 +41,10 @@ export class LabelResolver
             {
                 throw new AssemblyException("Local label used without global label: " + labelParameter.label, line);
             }
-            
+
             labelParameter.label = this.lastGlobalLabel.name + labelParameter.label;
         }
-        
+
         this.unresolvedParameters.push({
             labelParameter: labelParameter,
             line: line

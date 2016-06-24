@@ -125,7 +125,6 @@ export class MemoryDefinition
     }
 }
 
-// TODO: comment on empty lines
 export class Assembler
 {
     assemble(program: string): Program

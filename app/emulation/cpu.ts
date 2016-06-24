@@ -223,7 +223,7 @@ export class CPU
     {
         return this.eip >= this.program.instructions.length;
     }
-    
+
     getNextInstruction(): number
     {
         return this.eip + 1;
