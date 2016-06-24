@@ -60,7 +60,14 @@ export class LabelParameter extends Parameter
         super(size);
     }
 
-    get label() { return this._label; }
+    get label(): string
+    {
+        return this._label;
+    }
+    set label(value: string)
+    {
+        this._label = value;
+    }
 
     resolveLabel(value: number)
     {

@@ -13,6 +13,7 @@ class Label
 export class LabelResolver
 {
     private labels: any = {};
+    private lastGlobalLabel: Label = null;
     private unresolvedParameters: { labelParameter: LabelParameter, line: number }[] = [];
 
     addLabel(address: number, label: string, local: boolean = false)
@@ -25,10 +26,25 @@ export class LabelResolver
         }
 
         this.labels[label] = new Label(label, local, address);
+        
+        if (!local)
+        {
+            this.lastGlobalLabel = this.labels[label];
+        }
     }
 
     markUnresolvedParameter(labelParameter: LabelParameter, line: number)
     {
+        if (labelParameter.label.startsWith("."))
+        {
+            if (this.lastGlobalLabel === null)
+            {
+                throw new AssemblyException("Local label used without global label: " + labelParameter.label, line);
+            }
+            
+            labelParameter.label = this.lastGlobalLabel.name + labelParameter.label;
+        }
+        
         this.unresolvedParameters.push({
             labelParameter: labelParameter,
             line: line

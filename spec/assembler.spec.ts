@@ -115,4 +115,26 @@ describe('Assembler', () =>
         `);
         }).toThrowError(AssemblyException);
     });
+    it('Recognizes local labels', () => {
+        expect(() => {
+            assembler.assemble(`
+            section .data
+            section .text
+            test:
+                MOV EAX, .localTest
+            .localTest:
+                LEAVE
+        `);
+        }).not.toThrow();
+    });
+    it('Rejects local label without global label', () => {
+        expect(() => {
+            assembler.assemble(`
+            section .data
+            section .text
+            .data2:
+                MOV EAX, .data2
+        `);
+        }).toThrowError(AssemblyException);
+    });
 });
