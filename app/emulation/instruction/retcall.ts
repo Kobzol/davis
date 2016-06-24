@@ -8,7 +8,7 @@ export class Enter extends Instruction
         cpu.push(cpu.getRegisterByName("EBP").getValue());
         cpu.getRegisterByName("EBP").setValue(cpu.getRegisterByName("ESP").getValue());
 
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
 
@@ -17,7 +17,7 @@ export class Leave extends Instruction
     execute(cpu: CPU): number
     {
         cpu.getRegisterByName("EBP").setValue(cpu.pop());
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
 

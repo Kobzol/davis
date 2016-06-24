@@ -9,7 +9,7 @@ export class Interrupt extends UnaryReadOperation
     execute(cpu: CPU): number
     {
         cpu.onInterrupt.emit(this.number.getValue());
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 
     loadParameters(number: MemoryView): void

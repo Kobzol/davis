@@ -7,7 +7,7 @@ export class Compare extends BinaryOperation
     execute(cpu: CPU): number
     {
         cpu.alu.sub(this.target.getValue(), this.source.getValue());
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 
     getValidParameters(): string[][]

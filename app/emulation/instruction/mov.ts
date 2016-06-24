@@ -7,7 +7,7 @@ export class Move extends BinaryOperation
     execute(cpu: CPU): number
     {
         this.target.setValue(this.source.getValue());
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 
     loadParameters(target: MemoryView, source: MemoryView)

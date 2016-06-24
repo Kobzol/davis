@@ -6,7 +6,7 @@ export class SetDirection extends Instruction
     execute(cpu: CPU): number
     {
         cpu.statusWord.direction = true;
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
 export class ClearDirection extends Instruction
@@ -14,7 +14,7 @@ export class ClearDirection extends Instruction
     execute(cpu: CPU): number
     {
         cpu.statusWord.direction = false;
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
 
@@ -23,7 +23,7 @@ export class SetCarry extends Instruction
     execute(cpu: CPU): number
     {
         cpu.statusWord.carry = true;
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
 export class ClearCarry extends Instruction
@@ -31,6 +31,6 @@ export class ClearCarry extends Instruction
     execute(cpu: CPU): number
     {
         cpu.statusWord.carry = false;
-        return cpu.eip + 1;
+        return cpu.getNextInstruction();
     }
 }
