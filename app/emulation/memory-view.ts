@@ -57,6 +57,11 @@ export class MemoryView
         return new MemoryView(this.memory, byteSize, this.index + offset, signed);
     }
 
+    resize(size: number): MemoryView
+    {
+        return new MemoryView(this.memory, size, this.index, this.signed);
+    }
+
     get size(): number { return this.byteSize; }
 }
 

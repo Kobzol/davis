@@ -209,6 +209,14 @@ export class CPU
         this._running = true;
         this.scheduleRun();
     }
+    runSync()
+    {
+        this._running = true;
+        while (this._running)
+        {
+            this.step();
+        }
+    }
     pause()
     {
         this._running = false;

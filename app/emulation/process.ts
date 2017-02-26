@@ -16,12 +16,17 @@ export class Process
         return this._cpu;
     }
 
-    public start()
+    public start(sync: boolean = false)
     {
         this.started = true;
         this.reset();
         this.initMemory();
-        this.cpu.run();
+
+        if (sync)
+        {
+            this.cpu.runSync();
+        }
+        else this.cpu.run();
     }
 
     public isStarted(): boolean
