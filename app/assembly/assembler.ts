@@ -29,7 +29,7 @@ let parser = require("./asm-parser.js");
 const InstructionMapping = {
     "MOV":      Move,
     "INT":      Interrupt,
-    "HLT":     Halt,
+    "HLT":      Halt,
     "POP":      Pop,
     "PUSH":     Push,
     "CALL":     Call,
@@ -286,9 +286,15 @@ export class Assembler
         mapping[Parameter.DerefConstant] = this.parseLabelParameter;
         mapping[Parameter.Memory] = this.parseMemoryParameter;
 
+        let size: number = null;
+        if (operands !== undefined && operands.length == 2)
+        {
+            size = this.getParameterSize(operands[1]);
+        }
+
         return _.map(operands, (operand) => {
             let innerOperand: any = this.getInnerParameter(operand);
-            return mapping[this.getTag(innerOperand)].call(this, this.getParameterSize(operand), innerOperand, assemblyData);
+            return mapping[this.getTag(innerOperand)].call(this, size == null ? this.getParameterSize(operand) : size, innerOperand, assemblyData);
         });
     }
     private parseRegisterParameter(size: number, operand: any, assemblyData: AssemblyData): RegisterParameter

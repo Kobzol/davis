@@ -1,8 +1,8 @@
 import {Component, ViewChild, AfterViewInit} from "@angular/core";
-import {MemoryBlock} from "./../../emulation/memory-block";
-import {CPU, Interrupt} from "./../../emulation/cpu";
-import {Assembler, AssemblyException} from "./../../assembly/assembler";
-import {Program} from "./../../assembly/program";
+import {MemoryBlock} from "../../emulation/memory-block";
+import {CPU, Interrupt} from "../../emulation/cpu";
+import {Assembler, AssemblyException} from "../../assembly/assembler";
+import {Program} from "../../assembly/program";
 import {AsmEditorComponent} from "../asm-editor/asm-editor";
 import {CpuComponent} from "../cpu/cpu";
 import {MemoryComponent} from "../memory/memory";
@@ -35,37 +35,14 @@ export class AppComponent implements AfterViewInit
 `section .data
 hello:
     db 'Hello world!', 10, 0
+
 section .text
+
+asd:
     MOV EAX, hello
-    INT 2   ; print string EAX
-
-    PUSH 5
-    CALL factorial
-    POP ECX
-    INT 1   ; print EAX
-    HLT
-
-factorial:
-    ENTER
-    
-    CMP [EBP + 8], 1
-    JNE .recurse
-    MOV EAX, 1
-    JMP .end
-    
-.recurse:
-    MOV EAX, [EBP + 8]
-    DEC EAX
-
-    PUSH EAX
-    CALL factorial
-    POP ECX
-    
-    IMUL [EBP + 8]
-    
-.end:
-    LEAVE
-    RET`
+    MOV [EAX], BYTE 97 ; MOV EAX, hello
+    INT 2
+    HLT`
         ;
     }
 

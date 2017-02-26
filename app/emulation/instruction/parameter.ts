@@ -46,7 +46,7 @@ export class MemoryParameter extends Parameter
         let baseReg: MemoryView = cpu.getRegisterByIndex(this.baseReg);
         let indexReg: MemoryView = cpu.getRegisterByIndex(this.indexReg);
 
-        return cpu.memory.load(cpu.calculateEffectiveAddress(baseReg, indexReg, this.multiplier, this.constant));
+        return cpu.memory.load(cpu.calculateEffectiveAddress(baseReg, indexReg, this.multiplier, this.constant), this.size);
     }
 }
 
@@ -76,7 +76,7 @@ export class LabelParameter extends Parameter
 
     fetchData(cpu: CPU): MemoryView
     {
-        return new NumericConstant(this.value);
+        return new NumericConstant(this.value, this.size);
     }
 }
 
