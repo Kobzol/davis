@@ -82,7 +82,7 @@ describe("ALU", () => {
             alu.idivide(1, 0);
         }).toThrowError(RuntimeException);
 
-        var joc = jasmine.objectContaining;
+        const joc = jasmine.objectContaining;
 
         expect(alu.idivide(1, 1)).toEqual(joc({
             value: 1,
@@ -105,7 +105,7 @@ describe("ALU", () => {
         }));
     });
     it('Correctly handles signed multiplication', () => {
-        var joc = jasmine.objectContaining;
+        const joc = jasmine.objectContaining;
 
         expect(alu.imultiply(0, 0)).toEqual(joc({
             lowerHalf: 0,
