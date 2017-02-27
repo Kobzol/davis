@@ -43,4 +43,18 @@ describe('Davis', () =>
         let cpu: CPU = runProgram(program);
         expect(cpu.memory.load(0, 4).getValue()).toEqual(258);
     });
+
+    it('Has LOOP instruction', () => {
+        const program = assembler.assemble(`
+            section .text
+                MOV ECX, 5
+                MOV EAX, 0
+            body:
+                ADD EAX, ECX
+                LOOP body
+        `);
+        let cpu = runProgram(program);
+
+        expect(cpu.getRegisterByName("EAX").getValue()).toEqual(15);
+    });
 });

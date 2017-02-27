@@ -57,7 +57,7 @@ JumpInstruction =
     	"JNB" / "JAE" / "JNC" / "JBE" / "JNA" / "JA" / "JNBE" / "JL" /
         "JNGE" / "JGE" / "JNL" / "JLE" / "JNG" / "JG" / "JNLE" / "JCXZ" /
         "JECXZ" / "JP" / "JPE" / "JNP" / "JPO" / "JO" / "JNO" / "JS" /
-        "JNS" / "CALL"
+        "JNS" / "CALL" / "LOOP"
     ) _ target:ReadableExpression
     { return { tag: "Instruction", type: "Jump", name: name, operands: [target] }; }
 
