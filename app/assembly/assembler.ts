@@ -4,7 +4,7 @@ import {EncodedInstruction} from "./encoding";
 import {Move} from "../emulation/instruction/mov";
 import {Instruction} from "../emulation/instruction/instruction";
 import {
-    Parameter, RegisterParameter, MemoryParameter, LabelParameter, DerefLabelParameter
+    Parameter, RegisterParameter, MemoryParameter, LabelParameter, DerefLabelParameter, Indexer
 } from "../emulation/instruction/parameter";
 import {REGISTER_INDEX} from "../emulation/cpu";
 import {
@@ -280,7 +280,7 @@ export class Assembler
     {
         if (operands !== undefined && operands.length == 2)
         {
-            if (this.getTag(this.getInnerParameter(operands[0])) == Parameter.Memory)
+            if (this.isMemoryDereference(operands[0]))
             {
                 operands[0].size = operands[1].size;
             }
@@ -308,7 +308,7 @@ export class Assembler
         let labelParameter: LabelParameter;
         if (_.has(operand, "deref") && operand.deref)
         {
-            labelParameter = new DerefLabelParameter(size, operand.tag === "Label" ? operand.value : "");
+            labelParameter = new DerefLabelParameter(size, operand.tag === "Label" ? operand.value : "", this.parseIndexer(operand.index));
         }
         else
         {
@@ -329,20 +329,32 @@ export class Assembler
     private parseMemoryParameter(size: number, operand: any, assemblyData: AssemblyData): MemoryParameter
     {
         let baseRegId: number = REGISTER_INDEX[this.parseRegisterName(operand.baseRegister)].id;
+        let indexer: Indexer = this.parseIndexer(operand.index);
 
-        let indexRegId: number = REGISTER_INDEX.NULL.id;
+        return new MemoryParameter(size, baseRegId, indexer);
+    }
+    private parseIndexer(index: any): Indexer
+    {
+        let indexReg: number = REGISTER_INDEX.NULL.id;
         let multiplier: number = 1;
-        if (operand.index !== null)
+        let constant: number = 0;
+
+        if (index !== null)
         {
-            indexRegId = REGISTER_INDEX[this.parseRegisterName(operand.index.register)].id;
-            multiplier = operand.index.multiplier;
+            if (index.index != null)
+            {
+                indexReg = REGISTER_INDEX[this.parseRegisterName(index.index.register)].id;
+                multiplier = index.index.multiplier;
+            }
+
+            if (index.constant != null)
+            {
+                constant = index.constant.value;
+            }
         }
 
-        let constant: number = operand.constant !== null ? operand.constant.value : 0;
-
-        return new MemoryParameter(size, baseRegId, indexRegId, multiplier, constant);
+        return {indexReg, multiplier, constant};
     }
-
     private parseRegisterName(operand: any): string
     {
         let registerName: string = operand.name;
@@ -353,6 +365,7 @@ export class Assembler
 
         return registerName;
     }
+
     private checkParameterCompatibility(instruction: Instruction, operands: any[], name: string)
     {
         if (operands !== undefined && operands.length == 2)
@@ -377,6 +390,7 @@ export class Assembler
         throw new AssemblyException("Unknown parameter combination for instruction " + name + "." +
             " Got " + parameterMask.toString() + ", expected one of " + JSON.stringify(validMasks));
     }
+
     private getTag(operand: any): string
     {
         let tag: string = operand.tag;
@@ -426,6 +440,12 @@ export class Assembler
             return operand.size;
         }
         else return 4;
+    }
+
+    private isMemoryDereference(operand: any): boolean
+    {
+        const tag = this.getTag(this.getInnerParameter(operand));
+        return tag === Parameter.Memory || tag === Parameter.DerefConstant;
     }
 
     private assembleLabel(label: {tag: string, name: any, local: boolean}, assemblyData: AssemblyData, memoryType: MemoryType)

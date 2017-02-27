@@ -2,6 +2,13 @@ import {MemoryView} from "../memory-view";
 import {NumericConstant} from "../memory-view";
 import {CPU, REGISTER_INDEX} from "../cpu";
 
+export interface Indexer
+{
+    indexReg: number;
+    multiplier: number;
+    constant: number;
+}
+
 export abstract class Parameter
 {
     public static get Reg() { return "Reg"; }
@@ -34,9 +41,7 @@ export class MemoryParameter extends Parameter
 {
     constructor(size: number,
                 private baseReg: number,
-                private indexReg: number = REGISTER_INDEX.NULL.id,
-                private multiplier: number = 1,
-                private constant: number = 0)
+                private indexer: Indexer)
     {
         super(size);
     }
@@ -44,9 +49,9 @@ export class MemoryParameter extends Parameter
     fetchData(cpu: CPU): MemoryView
     {
         let baseReg: MemoryView = cpu.getRegisterByIndex(this.baseReg);
-        let indexReg: MemoryView = cpu.getRegisterByIndex(this.indexReg);
+        let indexReg: MemoryView = cpu.getRegisterByIndex(this.indexer.indexReg);
 
-        return cpu.memory.load(cpu.calculateEffectiveAddress(baseReg, indexReg, this.multiplier, this.constant), this.size);
+        return cpu.derefAddress(cpu.calculateEffectiveAddressFromRegister(baseReg, indexReg, this.indexer.multiplier, this.indexer.constant), this.size);
     }
 }
 
@@ -83,13 +88,15 @@ export class LabelParameter extends Parameter
 export class DerefLabelParameter extends LabelParameter
 {
     constructor(size: number,
-                label: string = "")
+                label: string = "",
+                private indexer: Indexer)
     {
         super(size, label);
     }
 
     fetchData(cpu: CPU): MemoryView
     {
-        return cpu.deref(new NumericConstant(this.value), this.size);
+        let indexReg: MemoryView = cpu.getRegisterByIndex(this.indexer.indexReg);
+        return cpu.derefAddress(cpu.calculateEffectiveAddress(this.value, indexReg, this.indexer.multiplier, this.indexer.constant), this.size);
     }
 }

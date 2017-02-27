@@ -270,7 +270,12 @@ export class CPU
 
         return this.memory.load(address, size);
     }
-    calculateEffectiveAddress(baseReg: MemoryView, indexReg: MemoryView = null,
+    calculateEffectiveAddressFromRegister(baseReg: MemoryView, indexReg: MemoryView = null,
+                              multiplier: number = 1, constant: number = 0): number
+    {
+        return this.calculateEffectiveAddress(baseReg.getValue(), indexReg, multiplier, constant);
+    }
+    calculateEffectiveAddress(address: number, indexReg: MemoryView = null,
                               multiplier: number = 1, constant: number = 0): number
     {
         if (indexReg === null)
@@ -278,7 +283,7 @@ export class CPU
             indexReg = this.getRegisterByName("NULL");
         }
 
-        return baseReg.getValue() + indexReg.getValue() * multiplier + constant;
+        return address + indexReg.getValue() * multiplier + constant;
     }
     setFlags(value: number)
     {

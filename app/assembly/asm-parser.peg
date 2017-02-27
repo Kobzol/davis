@@ -32,9 +32,9 @@ DataConstant =
 	Number / String
 
 DataSize =
-	"db" { return 1; } /
-    "dw" { return 2; } /
-    "dd" { return 4; }
+	"db"i { return 1; } /
+    "dw"i { return 2; } /
+    "dd"i { return 4; }
 
 TextLine =
 	(_ label:Label? _ inst:Instruction Comment? __ { return { tag: "Line", label: label, instruction: inst }; }) /
@@ -48,43 +48,43 @@ Instruction =
     MemoryInstruction / ArithmeticInstruction / CompareInstruction
 
 NoOperandInstruction =
-	("CLD" / "STD" / "CLC" / "STC" / "ENTER" / "RET" / "LEAVE" / "HLT")
+	("CLD"i / "STD"i / "CLC"i / "STC"i / "ENTER"i / "RET"i / "LEAVE"i / "HLT"i)
 	{ return { tag: "Instruction", type: "NoOperand", name: text() }; }
 
 JumpInstruction =
 	name:$(
-    	"JMP" / "JE" / "JNE" / "JZ" / "JNZ" / "JB" / "JNAE" / "JC" /
-    	"JNB" / "JAE" / "JNC" / "JBE" / "JNA" / "JA" / "JNBE" / "JL" /
-        "JNGE" / "JGE" / "JNL" / "JLE" / "JNG" / "JG" / "JNLE" / "JCXZ" /
-        "JECXZ" / "JP" / "JPE" / "JNP" / "JPO" / "JO" / "JNO" / "JS" /
-        "JNS" / "CALL" / "LOOP"
+    	"JMP"i / "JE"i / "JNE"i / "JZ"i / "JNZ"i / "JB"i / "JNAE"i / "JC"i /
+    	"JNB"i / "JAE"i / "JNC"i / "JBE"i / "JNA"i / "JA"i / "JNBE"i / "JL"i /
+        "JNGE"i / "JGE"i / "JNL"i / "JLE"i / "JNG"i / "JG"i / "JNLE"i / "JCXZ"i /
+        "JECXZ"i / "JP"i / "JPE"i / "JNP"i / "JPO"i / "JO"i / "JNO"i / "JS"i /
+        "JNS"i / "CALL"i / "LOOP"i
     ) _ target:ReadableExpression
     { return { tag: "Instruction", type: "Jump", name: name, operands: [target] }; }
 
 SingleOperandInstruction =
 	name:$(
-    	"POP" / "INC" / "DEC"
+    	"POP"i / "INC"i / "DEC"i
     ) _ target:WritableExpression { return { tag: "Instruction", type: "SingleOperand", name: name, operands: [target] }; } /
     name:$(
-    	"PUSH" / "INT"
+    	"PUSH"i / "INT"i
     ) _ target:ReadableExpression { return { tag: "Instruction", type: "SingleOperand", name: name, operands: [target] }; }
 
 MemoryInstruction =
-	name:$("MOV" / "MOVSX") _ target:WritableExpression _ "," _ source:ReadableExpression
+	name:$("MOV"i / "MOVSX"i) _ target:WritableExpression _ "," _ source:ReadableExpression
     { return { tag: "Instruction", type: "Memory", name: name, operands: [target, source] }; }
 
 ArithmeticInstruction =
 	(
-	    name:$("ADD" / "SUB" / "ADC" / "SBB") _ target:WritableExpression "," _ source:ReadableExpression
+	    name:$("ADD"i / "SUB"i / "ADC"i / "SBB"i) _ target:WritableExpression "," _ source:ReadableExpression
         { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [target, source] }; }
     ) /
     (
-        name:$("MUL" / "IMUL" / "DIV" / "IDIV") _ source:ReadableExpression
+        name:$("MUL"i / "IMUL"i / "DIV"i / "IDIV"i) _ source:ReadableExpression
         { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [source] }; }
     )
 
 CompareInstruction =
-    name:$("CMP") _ op1:ReadableExpression _ "," _ op2:ReadableExpression
+    name:$("CMP"i) _ op1:ReadableExpression _ "," _ op2:ReadableExpression
     { return { tag: "Instruction", type: "Compare", name: name, operands: [op1, op2] }; }
 
 WritableExpression =
@@ -100,27 +100,25 @@ ReadableExpression =
     cast:SizeCast _ value:Number { return { tag: "Cast", size: cast, value: value }; }
 
 AddressDereferenceExpression =
-	"[" _ label:LabelExpression _ "]" { return { tag: "Label", value: label.value, deref: true }; } /
-    "[" _ number:Number _ "]" { return { tag: "Number", value: number.value, deref: true }; }
+	"[" _ label:LabelExpression _ index:IndexExpression? _ "]" { return { tag: "Label", value: label.value, deref: true, index: index }; } /
+    "[" _ number:Number _ index:IndexExpression? _ "]" { return { tag: "Number", value: number.value, deref: true, index: index }; }
 
 LabelExpression =
 	local:(".")? target:Identifier { return { tag: "Label", value: local !== null ? ("." + target.value) : target.value }; }
 
 RegisterDereferenceExpression =
-	(("[" _ baseReg:Register _ indexer:IndexExpression? _ "]")
+	"[" _ baseReg:Register _ index:IndexExpression? _ "]"
     {
     	return {
     		tag: "Mem",
         	baseRegister: baseReg,
-        	index: indexer !== null ? indexer.index : null,
-        	constant: indexer !== null && indexer.constant !== null ? indexer.constant : null
+        	index: index
     	};
-    })
+    }
 
 IndexExpression =
-	(
-        index:("+" _ register:Register _ "*" _ multiplier:Number
-        	{ return { register: register, multiplier: multiplier.value }; })?
+	 index:("+" _ register:Register _ "*" _ multiplier:Number
+        	{ return { register: register, multiplier: multiplier.value } })?
         _
         constant: (operator:$("+" / "-") _ constant:Number
                     {
@@ -130,26 +128,23 @@ IndexExpression =
                     	}
                     	return constant;
                     } )?
-    ) { return { index: index, constant: constant }; }
+    { return { index: index, constant: constant }; }
 
 Register =
 	(
-    	"EAX" / "EBX" / "ECX" / "EDX" / "EBP" / "ESP" / "EDI" / "ESI"
+    	"EAX"i / "EBX"i / "ECX"i / "EDX"i / "EBP"i / "ESP"i / "EDI"i / "ESI"i
     ) { return { tag: "Reg", name: text(), size: 4 }; } /
     (
-    	"AX" / "BX" / "CX" / "DX"
+    	"AX"i / "BX"i / "CX"i / "DX"i
     ) { return { tag: "Reg", name: text(), size: 2 } } /
     (
-    	"AH" / "BH" / "CH" / "DH"
-    ) { return { tag: "Reg", name: text(), size: 1 } } /
-    (
-    	"AL" / "BL" / "CL" / "DL"
+    	"AH"i / "BH"i / "CH"i / "DH"i / "AL"i / "BL"i / "CL"i / "DL"i
     ) { return { tag: "Reg", name: text(), size: 1 } }
 
 SizeCast =
-	"BYTE" { return 1; } /
-    "WORD" { return 2; } /
-    "DWORD" { return 4; } /
+	"BYTE"i { return 1; } /
+    "WORD"i { return 2; } /
+    "DWORD"i { return 4; } /
     "" { return 0; }
 
 Identifier =

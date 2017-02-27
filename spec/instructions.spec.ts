@@ -58,7 +58,7 @@ describe('Davis', () =>
         expect(cpu.getRegisterByName("EAX").getValue()).toEqual(15);
     });
 
-    it('Correctly handles memory dereference', () => {
+    it('Correctly handles memory dereference from register', () => {
        const program = assembler.assemble(`
             section .text
                 MOV [17], 4
@@ -68,5 +68,21 @@ describe('Davis', () =>
         `);
        let cpu = runProgram(program);
        expect(cpu.memory.load(17, 4).getValue()).toEqual(113);
+    });
+    it('Correctly handles memory dereference from label', () => {
+        const program = assembler.assemble(`
+            section .data
+            padding:
+                db 1, 2, 3, 4
+            test:
+                db 1, 1
+            section .text
+                MOV [test], BYTE 2
+                MOV ECX, 2
+                MOV [padding + ECX * 1 - 1], BYTE 1
+        `);
+        let cpu = runProgram(program);
+        expect(cpu.memory.load(4, 2).getValue()).toEqual(258);
+        expect(cpu.memory.load(0, 2).getValue()).toEqual(257);
     });
 });
