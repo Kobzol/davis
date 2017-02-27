@@ -57,4 +57,16 @@ describe('Davis', () =>
 
         expect(cpu.getRegisterByName("EAX").getValue()).toEqual(15);
     });
+
+    it('Correctly handles memory dereference', () => {
+       const program = assembler.assemble(`
+            section .text
+                MOV [17], 4
+                MOV EAX, 8
+                MOV ECX, 2
+                MOV [EAX + ECX * 4 + 1], 113
+        `);
+       let cpu = runProgram(program);
+       expect(cpu.memory.load(17, 4).getValue()).toEqual(113);
+    });
 });

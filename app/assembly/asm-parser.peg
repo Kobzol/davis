@@ -120,7 +120,7 @@ RegisterDereferenceExpression =
 IndexExpression =
 	(
         index:("+" _ register:Register _ "*" _ multiplier:Number
-        	{ return { register: register, multiplier: multiplier }; })?
+        	{ return { register: register, multiplier: multiplier.value }; })?
         _
         constant: (operator:$("+" / "-") _ constant:Number
                     {
