@@ -26,7 +26,7 @@ export class RegisterParameter extends Parameter
 
     fetchData(cpu: CPU): MemoryView
     {
-        return cpu.getRegisterByIndex(this.registerIndex).resize(this.size);
+        return cpu.getRegisterByIndex(this.registerIndex);
     }
 }
 

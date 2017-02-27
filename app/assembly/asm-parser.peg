@@ -134,10 +134,17 @@ IndexExpression =
 
 Register =
 	(
-    	"EAX" / "AX" / "AH" / "AL" / "EBX" / "BX" / "BH" / "BL" /
-    	"ECX" / "CX" / "CH" / "CL" / "EDX" / "DX" / "DH" / "DL" /
-    	"EBP" / "ESP" / "EDI" / "ESI"
-    ) { return { tag: "Reg", name: text() }; }
+    	"EAX" / "EBX" / "ECX" / "EDX" / "EBP" / "ESP" / "EDI" / "ESI"
+    ) { return { tag: "Reg", name: text(), size: 4 }; } /
+    (
+    	"AX" / "BX" / "CX" / "DX"
+    ) { return { tag: "Reg", name: text(), size: 2 } } /
+    (
+    	"AH" / "BH" / "CH" / "DH"
+    ) { return { tag: "Reg", name: text(), size: 1 } } /
+    (
+    	"AL" / "BL" / "CL" / "DL"
+    ) { return { tag: "Reg", name: text(), size: 1 } }
 
 SizeCast =
 	"BYTE" { return 1; } /
@@ -149,8 +156,8 @@ Identifier =
 	[a-zA-Z_][a-zA-Z_0-9]* { return { tag: "Identifier", value: text() }; }
 
 Number =
-	"0x"[0-9a-fA-F]+ { return { tag: "Number", value: parseInt(text(), 16) }; } /
-	[0-9]+ { return { tag: "Number", value: parseInt(text(), 10) }; }
+	"0x"[0-9a-fA-F]+ { return { tag: "Number", value: parseInt(text(), 16), size: 4 }; } /
+	[0-9]+ { return { tag: "Number", value: parseInt(text(), 10), size: 4 }; }
 
 String =
 	"'" value:("\\'" { return "'"; } / [^'])* "'" { return { tag: "String", value: value }; }

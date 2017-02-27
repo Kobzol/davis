@@ -28,7 +28,7 @@ describe('Davis', () =>
         const program: Program = assembler.assemble(`
             section .text
                 MOV EAX, 257
-                MOV EAX, BYTE 2
+                MOV AL, BYTE 2
         `);
         let cpu: CPU = runProgram(program);
         expect(cpu.getRegisterByName("EAX").getValue()).toEqual(258);

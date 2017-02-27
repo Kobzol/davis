@@ -278,6 +278,14 @@ export class Assembler
 
     private loadParameters(instruction: Instruction, operands: any[], name: string, assemblyData: AssemblyData): Parameter[]
     {
+        if (operands !== undefined && operands.length == 2)
+        {
+            if (this.getTag(this.getInnerParameter(operands[0])) == Parameter.Memory)
+            {
+                operands[0].size = operands[1].size;
+            }
+        }
+
         this.checkParameterCompatibility(instruction, operands, name);
 
         let mapping = {};
@@ -286,15 +294,9 @@ export class Assembler
         mapping[Parameter.DerefConstant] = this.parseLabelParameter;
         mapping[Parameter.Memory] = this.parseMemoryParameter;
 
-        let size: number = null;
-        if (operands !== undefined && operands.length == 2)
-        {
-            size = this.getParameterSize(operands[1]);
-        }
-
         return _.map(operands, (operand) => {
             let innerOperand: any = this.getInnerParameter(operand);
-            return mapping[this.getTag(innerOperand)].call(this, size == null ? this.getParameterSize(operand) : size, innerOperand, assemblyData);
+            return mapping[this.getTag(innerOperand)].call(this, this.getParameterSize(operand), innerOperand, assemblyData);
         });
     }
     private parseRegisterParameter(size: number, operand: any, assemblyData: AssemblyData): RegisterParameter
@@ -353,6 +355,14 @@ export class Assembler
     }
     private checkParameterCompatibility(instruction: Instruction, operands: any[], name: string)
     {
+        if (operands !== undefined && operands.length == 2)
+        {
+            if (this.getParameterSize(operands[0]) != this.getParameterSize(operands[1]))
+            {
+                throw new AssemblyException("Wrong size of operands");
+            }
+        }
+
         let parameterMask = _.map(operands, (operand) => this.getTag(this.getInnerParameter(operand)));
         let validMasks: string[][] = instruction.validParameters;
 
@@ -409,12 +419,13 @@ export class Assembler
     {
         if (operand.tag === "Cast")
         {
-            return operand.size > 0 ? operand.size : 4;
+            return operand.size > 0 ? operand.size : (operand.hasOwnProperty("value") ? this.getParameterSize(operand.value) : 4);
         }
-        else
+        else if (operand.hasOwnProperty("size"))
         {
-            return 4;
+            return operand.size;
         }
+        else return 4;
     }
 
     private assembleLabel(label: {tag: string, name: any, local: boolean}, assemblyData: AssemblyData, memoryType: MemoryType)

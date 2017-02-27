@@ -44,7 +44,6 @@ describe('Assembler', () =>
     it('Rejects non-existent instructions', () => {
         expect(() => {
             assembler.assemble(`
-                section .data
                 section .text
                 DOES_NOT_EXIST
             `);
@@ -53,9 +52,8 @@ describe('Assembler', () =>
 
     it('Doesn\'t have side effects', () => {
         let source: string = `
-            section .data
             section .text
-            MOV EAX, 5
+                MOV EAX, 5
         `;
 
         let program : Program = assembler.assemble(source);
@@ -82,6 +80,10 @@ describe('Assembler', () =>
         expect(memoryDefinitions[0].address).toEqual(0);
         expect(memoryDefinitions[0].size).toEqual(1);
         expect(memoryDefinitions[0].value).toEqual(1);
+
+        expect(memoryDefinitions[2].address).toEqual(2);
+        expect(memoryDefinitions[2].size).toEqual(1);
+        expect(memoryDefinitions[2].value).toEqual(3);
 
         expect(memoryDefinitions[4].address).toEqual(7);
         expect(memoryDefinitions[4].size).toEqual(4);
@@ -118,7 +120,6 @@ describe('Assembler', () =>
     it('Recognizes local labels', () => {
         expect(() => {
             assembler.assemble(`
-            section .data
             section .text
             test:
                 MOV EAX, .localTest
@@ -130,10 +131,18 @@ describe('Assembler', () =>
     it('Rejects local label without global label', () => {
         expect(() => {
             assembler.assemble(`
-            section .data
             section .text
             .data2:
                 MOV EAX, .data2
+        `);
+        }).toThrowError(AssemblyException);
+    });
+
+    it('Rejects wrong combination of operand sizes', () => {
+        expect(() => {
+            assembler.assemble(`
+            section .text
+            MOV EAX, BYTE 5
         `);
         }).toThrowError(AssemblyException);
     });
