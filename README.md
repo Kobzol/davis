@@ -43,10 +43,3 @@ Builds the application into `dist` folder.
 ```shell
 npm run build
 ```
-
-Manual build:
-```shell
-npm run peg     # compiles the assembly syntax grammar
-npm run tsc     # compiles typescript
-gulp build      # build, minify and concat assets, less, ts/js and dependencies
-```

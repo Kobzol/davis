@@ -1,0 +1,109 @@
+.wrapper {
+  display: block;
+  width: 1200px;
+  margin: 0 auto;
+
+  .column-wrapper {
+    display: flex;
+
+    .column {
+      width: 600px;
+      flex-grow: 1;
+
+      &:nth-child(2) {
+        margin-left: 10px;
+      }
+    }
+  }
+
+  .editor-wrapper {
+    .asm-editor {
+      .editor {
+        display: block;
+        width: 100%;
+        height: 350px;
+
+        .active-line {
+          background-color: #1E90FF !important;
+        }
+
+        .ace_gutter-cell.ace_breakpoint {
+          background: url("./assets/img/breakpoint.png") 1px 1px no-repeat no-repeat;
+          background-size: 12px 12px;
+        }
+      }
+      .assemble {
+        margin-top: 10px;
+      }
+    }
+    .errors {
+      color: #FF0000;
+    }
+  }
+  .execution-wrapper {
+
+  }
+  .console {
+    .text {
+      display: block;
+      width: 100%;
+      height: 200px;
+    }
+
+    .clear {
+      margin-top: 10px;
+    }
+  }
+  .cpu-wrapper {
+    .label {
+      display: inline-block;
+      width: 40px;
+      text-align: center;
+    }
+    .register {
+      .label {
+        width: 50px;
+      }
+    }
+    .tick-rate {
+      input[type=range] {
+        width: 80px;
+      }
+    }
+  }
+  .memory-wrapper {
+    .size-wrapper {
+      display: flex;
+
+      .size-label {
+        display: flex;
+        margin-right: 5px;
+
+        span {
+          margin-left: 5px;
+        }
+      }
+    }
+
+    .memory {
+      .row {
+        display: flex;
+        margin: 0;
+
+        .cell {
+          display: inline-block;
+          min-width: 30px;
+          height: 17px;
+          margin: 2px;
+          padding: 2px;
+          font-size: 11px;
+          line-height: 1;
+          border: 1px solid #000000;
+          color: #000000;
+          border-radius: 5px;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
