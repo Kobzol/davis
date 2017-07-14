@@ -1,7 +1,9 @@
 {
-  "name": "x86-ng2",
-  "version": "0.0.0",
+  "name": "x86-debugger",
+  "version": "0.4.0",
+  "description": "x86 assembler (Intel syntax) debugger and emulator",
   "license": "MIT",
+  "keywords": ["x86", "assembler", "nasm", "debugger", "emulator", "angular"],
   "scripts": {
     "ng": "ng",
     "start": "webpack-dev-server --port=4200",
