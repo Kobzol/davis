@@ -3,6 +3,8 @@ This tool allows writing, running and debugging x86 assembly in the browser.<br 
 It visualizes the program state (cpu and memory), supports breakpoints and<br />
 enables line-by-line stepping.
 
+You can try it online [here](https://kobzol.github.io/davis).
+
 ## Features
 * x86 assembly editor
   * Intel/NASM syntax with syntax-highlighting
