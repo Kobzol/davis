@@ -24,8 +24,8 @@ import {And, Or, Xor} from "../emulation/instruction/bitwise";
 import {LabelResolver} from "./label";
 import {SetDirection, ClearDirection, SetCarry, ClearCarry} from "../emulation/instruction/flags";
 import {Halt} from "../emulation/instruction/halt";
-declare var require: any;
-let parser = require("./asm-parser.peg");
+
+import parser from "./asm-parser.peg";
 
 const InstructionMapping = {
     "MOV":      Move,
