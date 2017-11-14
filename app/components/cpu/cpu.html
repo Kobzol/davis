@@ -1,9 +1,0 @@
-<div class="cpu" *ngIf="cpu !== null">
-  <label class="tick-rate">Tick rate: every {{ cpu.tickRate }} ms
-    <input type="range" min="100" max="500" [(ngModel)]="cpu.tickRate" /></label>
-  <register [cpu]="cpu" [name]="reg" *ngFor="let reg of getRegisterKeys()"></register>
-  <div *ngFor="let flag of getFlags()">
-    <span class="label label-primary name">{{ flag.name }}</span>
-    <span class="label label-default value">{{ flag.value ? 1 : 0 }}</span>
-  </div>
-</div>

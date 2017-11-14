@@ -1,9 +1,0 @@
-<div class="memory" *ngIf="memory !== null">
-  <div class="row" *ngFor="let row of createRange(getRowCount())">
-    <div class="col" *ngFor="let col of createRange(width)">
-        <span class="cell" *ngIf="memory.isValid(createAddress(row, col))">
-          {{ getCellValue(createAddress(row, col)) }}
-        </span>
-    </div>
-  </div>
-</div>
