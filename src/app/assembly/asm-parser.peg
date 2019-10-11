@@ -75,7 +75,7 @@ MemoryInstruction =
 
 ArithmeticInstruction =
 	(
-	    name:$("ADD"i / "SUB"i / "ADC"i / "SBB"i) _ target:WritableExpression "," _ source:ReadableExpression
+	    name:$("ADD"i / "SUB"i / "ADC"i / "SBB"i / "AND"i / "OR"i / "XOR"i) _ target:WritableExpression "," _ source:ReadableExpression
         { return { tag: "Instruction", type: "Arithmetic", name: name, operands: [target, source] }; }
     ) /
     (

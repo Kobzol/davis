@@ -78,13 +78,13 @@ module.exports = {
   },
   "entry": {
     "main": [
-      "./src\\main.ts"
+      "./src/main.ts"
     ],
     "polyfills": [
-      "./src\\polyfills.ts"
+      "./src/polyfills.ts"
     ],
     "styles": [
-      "./src\\styles.less"
+      "./src/styles.less"
     ]
   },
   "output": {
@@ -121,7 +121,7 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.css$/,
         "use": [
@@ -144,7 +144,7 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.scss$|\.sass$/,
         "use": [
@@ -175,7 +175,7 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.less$/,
         "use": [
@@ -204,7 +204,7 @@ module.exports = {
       },
       {
         "exclude": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.styl$/,
         "use": [
@@ -234,7 +234,7 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.css$/,
         "use": [
@@ -257,7 +257,7 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.scss$|\.sass$/,
         "use": [
@@ -288,7 +288,7 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.less$/,
         "use": [
@@ -317,7 +317,7 @@ module.exports = {
       },
       {
         "include": [
-          path.join(process.cwd(), "src\\styles.less")
+          path.join(process.cwd(), "src/styles.less")
         ],
         "test": /\.styl$/,
         "use": [
@@ -376,7 +376,7 @@ module.exports = {
       "sourceRoot": "webpack:///"
     }),
     new HtmlWebpackPlugin({
-      "template": "./src\\index.html",
+      "template": "./src/index.html",
       "filename": "./index.html",
       "hash": false,
       "inject": true,
@@ -432,10 +432,10 @@ module.exports = {
     new AotPlugin({
       "mainPath": "main.ts",
       "hostReplacementPaths": {
-        "environments\\environment.ts": "environments\\environment.ts"
+        "environments/environment.ts": "environments/environment.ts"
       },
       "exclude": [],
-      "tsConfigPath": "src\\tsconfig.app.json",
+      "tsConfigPath": "src/tsconfig.app.json",
       "skipCodeGeneration": true
     }),
       new webpack.DefinePlugin({
