@@ -16,6 +16,7 @@ export class Leave extends Instruction
 {
     execute(cpu: CPU): number
     {
+        cpu.getRegisterByName("ESP").setValue(cpu.getRegisterByName("EBP").getValue());
         cpu.getRegisterByName("EBP").setValue(cpu.pop());
         return cpu.getNextInstruction();
     }

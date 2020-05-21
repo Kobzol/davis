@@ -37,7 +37,6 @@ section .text
 
     PUSH 5
     CALL factorial
-    POP ECX
     INT 1   ; print EAX
     HLT
 
@@ -55,7 +54,6 @@ factorial:
 
     PUSH EAX
     CALL factorial
-    POP ECX
     
     IMUL [EBP + 8]
     
