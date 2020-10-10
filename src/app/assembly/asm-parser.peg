@@ -152,7 +152,7 @@ Identifier =
 
 Number =
 	"0x"[0-9a-fA-F]+ { return { tag: "Number", value: parseInt(text(), 16), size: 4 }; } /
-	[0-9]+ { return { tag: "Number", value: parseInt(text(), 10), size: 4 }; }
+	"-"?[0-9]+ { return { tag: "Number", value: parseInt(text(), 10), size: 4 }; }
 
 String =
 	"'" value:("\\'" { return "'"; } / [^'])* "'" { return { tag: "String", value: value }; }

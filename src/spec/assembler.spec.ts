@@ -146,4 +146,11 @@ describe('Assembler', () =>
         `);
         }).toThrowError(AssemblyException);
     });
+
+    it('Allows negative numbers', () => {
+        assembler.assemble(`
+            section .text
+              MOV EAX, -1
+        `);
+    });
 });
