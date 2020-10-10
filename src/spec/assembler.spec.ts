@@ -153,4 +153,20 @@ describe('Assembler', () =>
               MOV EAX, -1
         `);
     });
+
+    it('Allows jumps to labels named as registers', () => {
+      assembler.assemble(`
+              section .text
+                JL ch
+              ch:
+                HLT
+          `);
+    });
+
+    it('Allows jumps to raw addresses', () => {
+      assembler.assemble(`
+                section .text
+                  JL 0
+            `);
+    });
 });

@@ -58,7 +58,7 @@ JumpInstruction =
         "JNGE"i / "JGE"i / "JNL"i / "JLE"i / "JNG"i / "JG"i / "JNLE"i / "JCXZ"i /
         "JECXZ"i / "JP"i / "JPE"i / "JNP"i / "JPO"i / "JO"i / "JNO"i / "JS"i /
         "JNS"i / "CALL"i / "LOOP"i
-    ) _ target:ReadableExpression
+    ) _ target:JumpTargetExpression
     { return { tag: "Instruction", type: "Jump", name: name, operands: [target] }; }
 
 SingleOperandInstruction =
@@ -98,6 +98,10 @@ ReadableExpression =
     cast:SizeCast _ value:AddressDereferenceExpression { return { tag: "Cast", size: cast, value: value }; } /
     cast:SizeCast _ value:LabelExpression { return { tag: "Cast", size: cast, value: value }; } /
     cast:SizeCast _ value:Number { return { tag: "Cast", size: cast, value: value }; }
+
+JumpTargetExpression =
+	value:LabelExpression /
+    value:Number
 
 AddressDereferenceExpression =
 	"[" _ label:LabelExpression _ index:IndexExpression? _ "]" { return { tag: "Label", value: label.value, deref: true, index: index }; } /
