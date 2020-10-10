@@ -66,6 +66,8 @@ describe("ALU", () => {
         expect(alu.add(13678, 256897)).toEqual(270575);
         expect(alu.add(Math.pow(2, 33), 1000)).toEqual(1000);
         expect(alu.add(-8978654, 22235)).toEqual(-8956419);
+
+        expect(alu.add(0, 0, 1)).toEqual(1);
     });
     it('Correctly handles subtraction', () => {
         expect(alu.sub(0, 0)).toEqual(0);

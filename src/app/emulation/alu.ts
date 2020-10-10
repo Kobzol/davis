@@ -15,7 +15,7 @@ export class ALU
         op2 = this.normalize(op2);
 
         let result: number = 0;
-        let carry: number[] = [previousCarry, 0];
+        let carry: number[] = [0, previousCarry];
 
         for (let i = 0; i < 32; i++)
         {
