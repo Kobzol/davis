@@ -25,7 +25,7 @@ export class ALU
             op2 >>= 1;
 
             result |= (value % 2) << i;
-            carry[1] = value / 2;
+            carry[1] = (value / 2 >= 1) ? 1 : 0;
         }
 
         this.cpu.statusWord.carry = carry[1] === 1;
