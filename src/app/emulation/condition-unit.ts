@@ -40,6 +40,6 @@ export class ConditionUnit
     }
     get greater(): boolean
     {
-        return this.cpu.statusWord.zero && (this.cpu.statusWord.signum === this.cpu.statusWord.overflow);
+        return !this.cpu.statusWord.zero && (this.cpu.statusWord.signum === this.cpu.statusWord.overflow);
     }
 }

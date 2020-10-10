@@ -85,4 +85,94 @@ describe('Davis', () =>
         expect(cpu.memory.load(4, 2).getValue()).toEqual(258);
         expect(cpu.memory.load(0, 2).getValue()).toEqual(257);
     });
+
+  it('Correctly handles JA 1', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 2
+                CMP EAX, 1
+                JA end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(0);
+  });
+
+  it('Correctly handles JA 2', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 1
+                CMP EAX, 2
+                JA end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(42);
+  });
+
+  it('Correctly handles JA 3', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 2
+                CMP EAX, 2
+                JA end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(42);
+  });
+
+  it('Correctly handles JG 1', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 2
+                CMP EAX, 1
+                JG end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(0);
+  });
+
+  it('Correctly handles JG 2', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 1
+                CMP EAX, 2
+                JG end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(42);
+  });
+
+  it('Correctly handles JG 3', () => {
+    const program = assembler.assemble(`
+            section .text
+                MOV EBX, 0
+                MOV EAX, 2
+                CMP EAX, 2
+                JG end
+                MOV EBX, 42
+            end:
+                HLT
+        `);
+    let cpu = runProgram(program);
+    expect(cpu.getRegisterByName("EBX").getValue()).toEqual(42);
+  });
 });

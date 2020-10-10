@@ -71,6 +71,8 @@ describe("ALU", () => {
     });
     it('Correctly handles subtraction', () => {
         expect(alu.sub(0, 0)).toEqual(0);
+        expect(cpu.statusWord.carry).toEqual(false);
+
         expect(alu.sub(1, 1)).toEqual(0);
         expect(alu.sub(1, -1)).toEqual(2);
         expect(alu.sub(-1000, 1000)).toEqual(-2000);
@@ -78,6 +80,12 @@ describe("ALU", () => {
         expect(alu.sub(13678, 256897)).toEqual(-243219);
         expect(alu.sub(Math.pow(2, 33), 1000)).toEqual(-1000);
         expect(alu.sub(-8978654, 22235)).toEqual(-9000889);
+
+        expect(alu.sub(1, 2)).toEqual(-1);
+        expect(cpu.statusWord.carry).toEqual(true);
+
+        expect(alu.sub(2, 1)).toEqual(1);
+        expect(cpu.statusWord.carry).toEqual(false);
     });
     it('Correctly handles signed division', () => {
         expect(() => {
